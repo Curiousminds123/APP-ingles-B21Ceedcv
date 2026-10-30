@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#165b62">
+  <meta name="description" content="An interactive English B2.1 course organised around the CEEDCV 2026–2027 programme.">
+  <title>CEED B2.1 · English Path</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="menu-button" id="menu-button" aria-label="Open course navigation">☰</button>
+    <a class="brand" href="#home" aria-label="CEED B2.1 home">
+      <span class="brand-mark">B2</span>
+      <span><strong>CEED English Path</strong><small>Intermediate · B2.1 · 2026–2027</small></span>
+    </a>
+    <div class="top-meta"><span class="online-dot"></span> Self-study course <span class="top-divider"></span><span id="top-progress">0% complete</span></div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Course navigation">
+      <div class="side-label">YOUR COURSE</div>
+      <button class="nav-link" data-view="home"><span>⌂</span> Course home</button>
+      <button class="nav-link" data-view="schedule"><span>▦</span> Year plan</button>
+      <div class="side-label units-label">SIX UNITS · 25 WEEKS</div>
+      <nav id="unit-nav" aria-label="Units"></nav>
+      <div class="side-bottom">
+        <div class="side-label">ASSESSMENT</div>
+        <button class="nav-link" data-view="assessment"><span>◎</span> Tasks & exams</button>
+        <p>Progress is saved only in this browser.</p>
+      </div>
+    </aside>
+
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <footer class="footer">CEEDCV · English B2.1 · Course materials in English · 2026–2027</footer>
+
+  <script src="course-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
