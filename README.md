@@ -6,6 +6,8 @@ An interactive, self-paced English course adapted to the CEEDCV B2.1 programme f
 
 Open `index.html` in a modern browser. No installation, build step or account is required.
 
+The CEEDCV logo is included locally in `assets/ceed-logo.png`. The creator credit remains visible at the bottom of every page.
+
 ## Course contents
 
 The app follows the six units, tasks and calendar shared for the course:

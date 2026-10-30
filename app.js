@@ -111,7 +111,7 @@
       <section class="hero">
         <div class="eyebrow">CEEDCV · ENGLISH · 2026–2027</div>
         <h1>Your B2.1 year,<br>made visible.</h1>
-        <p>Un recorrido interactivo por las seis unidades y tareas de la programación B2.1 del CEED. La teoría, los ejemplos y la práctica están en inglés; aquí puedes consultar la temporalización y hacer seguimiento de tu progreso.</p>
+        <p>Explore the six units of the CEED B2.1 programme through visual English lessons, practical examples, common errors and short interactive quizzes. Follow the year plan and track your progress as you study.</p>
         <div class="hero-actions">
           <a class="button light" href="#unit/${nextUnit.id}/theory">Continue learning <span aria-hidden="true">→</span></a>
           <a class="button" href="#schedule">View the year plan</a>
@@ -195,10 +195,10 @@
           return `<article class="assessment-card"><div class="eyebrow">${esc(item[0])} · UNIT ${index + 1}</div><h3>${esc(item[1])}</h3><p>${esc(item[2])}</p></article>`;
         }).join("")}
       </div>
-      <div class="section-heading"><div><h2>Cuatrimestral examinations</h2><p>Both exams assess communicative performance across skills.</p></div></div>
+      <div class="section-heading"><div><h2>Term examinations</h2><p>Both exams assess communicative performance across skills.</p></div></div>
       <div class="assessment-grid">
-        <article class="assessment-card"><div class="weight">4 skills</div><h3>First-term examination</h3><p>Listening and reading comprehension, written production and oral production, including mediation. The calendar period is provisional: 15–21 December 2026.</p></article>
-        <article class="assessment-card"><div class="weight">4 skills</div><h3>Final examination</h3><p>Listening and reading comprehension, two written texts (including written mediation) and two oral activities, which may include monologue, interaction or mediation. The calendar period is provisional: 27 April–3 May 2027.</p></article>
+        <article class="assessment-card"><div class="weight">4 skills</div><h3>First-term examination</h3><p>Listening and reading comprehension, written production and oral production, including mediation. Calendar: 25 January–7 February 2027.</p></article>
+        <article class="assessment-card"><div class="weight">4 skills</div><h3>Second-term examination</h3><p>Listening and reading comprehension, two written texts (including written mediation) and two oral activities, which may include monologue, interaction or mediation. Calendar: 24 May–6 June 2027.</p></article>
       </div>
       <div class="section-heading"><div><h2>Assessment routes in the programme</h2><p>These are programme summary criteria; consult the official course guide for your case.</p></div></div>
       <div class="assessment-grid">
