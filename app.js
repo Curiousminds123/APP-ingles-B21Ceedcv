@@ -15,7 +15,8 @@
     ["reading", "Reading"],
     ["speaking", "Speaking & photo"],
     ["skills", "Exam task"],
-    ["mediation", "Mediation studio"]
+    ["mediation", "Mediation studio"],
+    ["booklet", "🖨 Print unit"]
   ];
   const sectionGuides = {
     theory: [["01", "See the pattern"], ["02", "Compare examples"], ["03", "Avoid common errors"]],
@@ -24,7 +25,16 @@
     reading: [["01", "Read for meaning"], ["02", "Find text evidence"], ["03", "Check understanding"]],
     speaking: [["01", "Observe the image"], ["02", "Describe details"], ["03", "Share an inference"]],
     skills: [["01", "Understand the task"], ["02", "Plan your response"], ["03", "Review your work"]],
-    mediation: [["01", "Select key facts"], ["02", "Rephrase clearly"], ["03", "Adapt for your reader"]]
+    mediation: [["01", "Select key facts"], ["02", "Rephrase clearly"], ["03", "Adapt for your reader"]],
+    booklet: [["01", "Review topic by topic"], ["02", "Complete every exercise"], ["03", "Print or save as PDF"]]
+  };
+  const practiceByTopic = {
+    1: [[0, 1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 18], [11, 12, 13, 14, 15, 19], [16, 17]],
+    2: [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19]],
+    3: [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12], [13, 14, 15, 16], [17, 18, 19]],
+    4: [[0, 1, 2, 3, 4, 16, 17], [5, 6, 7, 18], [8, 9, 10, 11], [12, 13, 14, 15, 19]],
+    5: [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]],
+    6: [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19]]
   };
 
   let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
@@ -75,6 +85,10 @@
     if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4) {
       throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions and a complete mediation infographic.");
     }
+    const assignedQuestions = practiceByTopic[unit.id].reduce(function (all, group) { return all.concat(group); }, []);
+    if (assignedQuestions.length !== extra.quiz.length || new Set(assignedQuestions).size !== extra.quiz.length || assignedQuestions.some(function (index) { return index < 0 || index >= extra.quiz.length; })) {
+      throw new Error("Unit " + unit.id + " practice questions must be assigned to exactly one theory topic.");
+    }
   });
 
   function doneCount() {
@@ -119,6 +133,7 @@
     const parts = location.hash.replace(/^#\/?/, "").split("/");
     const routeName = parts[0] || "home";
     sidebar.classList.remove("open");
+    main.classList.remove("print-booklet-mode");
 
     if (routeName === "unit" && unitById(parts[1])) {
       const unit = unitById(parts[1]);
@@ -261,30 +276,36 @@
     const rows = topic.rows.map(function (row) {
       return `<tr>${row.map(function (cell) { return `<td>${cell}</td>`; }).join("")}</tr>`;
     }).join("");
-    const examples = topic.examples.map(function (example) {
-      return `<div class="example-chip">${example}</div>`;
+    const exampleIcons = ["✨", "💬", "📝", "🎯", "🔎", "🌟"];
+    const examples = topic.examples.map(function (example, exampleIndex) {
+      return `<div class="example-chip"><span class="example-icon" aria-hidden="true">${exampleIcons[exampleIndex % exampleIcons.length]}</span><span>${example}</span></div>`;
     }).join("");
     const errors = topic.errors.map(function (error) {
       return `<div class="error-row">
-        <div class="error-box wrong"><b>Common error</b>${esc(error[0])}</div>
-        <div class="error-box right"><b>Better English</b>${esc(error[1])}</div>
+        <div class="error-box wrong"><b>⚠️ Common error</b>${esc(error[0])}</div>
+        <div class="error-box right"><b>✅ Better English</b>${esc(error[1])}</div>
         <p class="why">${esc(error[2])}</p>
       </div>`;
     }).join("");
     return `<article class="topic-card" id="topic-${index}" tabindex="-1">
-      <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
-      <div class="visual-rule"><span aria-hidden="true">✦</span><span><b>Visual rule</b> · ${esc(topic.rule)}</span></div>
-      <div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
-      ${explanation.length ? `<div class="theory-explanation"><h4>How it works</h4>${explanation.map(function (paragraph) { return `<p>${esc(paragraph)}</p>`; }).join("")}</div>` : ""}
-      <div class="eyebrow">EXAMPLES</div><div class="example-row">${examples}</div>
-      <div class="errors"><div class="eyebrow">COMMON ERRORS</div>${errors}</div>
+      <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><span class="topic-kicker">TOPIC ${String(index + 1).padStart(2, "0")} · GRAMMAR & LANGUAGE</span><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
+      <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
+      <div class="grammar-flow" aria-label="Key language patterns">
+        ${topic.rows.map(function (row, rowIndex) {
+          return `<div class="grammar-flow-card"><span class="grammar-flow-step">${["🧩", "🔧", "💬", "⭐"][rowIndex % 4]}</span><div><strong>${row[0]}</strong><span>${row[1]}</span><p>${row[2]}</p></div></div>`;
+        }).join("")}
+      </div>
+      <details class="theory-table-details"><summary>📊 Open the full comparison table</summary><div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details>
+      ${explanation.length ? `<div class="theory-explanation"><h4>🧠 Understand the idea</h4>${explanation.map(function (paragraph, paragraphIndex) { return `<div class="explanation-point"><span aria-hidden="true">${paragraphIndex ? "🔎" : "📘"}</span><p>${esc(paragraph)}</p></div>`; }).join("")}</div>` : ""}
+      <div class="eyebrow theory-label">✨ EXAMPLES IN CONTEXT</div><div class="example-row">${examples}</div>
+      <div class="errors"><div class="eyebrow">🚦 WATCH OUT · COMMON ERRORS</div>${errors}</div>
     </article>`;
   }
 
   function renderTheory(unit) {
     return `<section class="panel">
-      <h2>Visual theory</h2>
-      <p class="panel-intro">Read the rule, compare the patterns in the table, then notice the examples and common errors. All explanations are in English for B2.1 practice.</p>
+      <div class="theory-hero"><span class="theory-hero-icon" aria-hidden="true">📘</span><div><div class="eyebrow">YOUR VISUAL GRAMMAR MAP</div><h2>Understand it · see it · use it</h2><p>Each topic shows you the key rule, the language pattern, clear examples and the mistakes to avoid.</p></div></div>
+      <div class="theory-key"><span>💡 Quick rule</span><span>🧩 Language pattern</span><span>✨ Real examples</span><span>🚦 Common errors</span></div>
       ${unit.topics.map(function (topic, index) { return topicMarkup(topic, index, unit); }).join("")}
     </section>`;
   }
@@ -362,6 +383,109 @@
       <div class="mediation-task"><div class="eyebrow">YOUR MEDIATION TASK</div><p>${esc(data.task)}</p></div>
       <details class="mediation-model"><summary>Open a model answer</summary><p>${esc(data.model)}</p></details>
       <div class="mediation-check"><strong>Before you share:</strong> ${data.checks.map(function (check) { return `<span>✓ ${esc(check)}</span>`; }).join("")}</div>
+    </section>`;
+  }
+
+  function printQuestion(question, questionNumber) {
+    return `<article class="print-question">
+      <h4><span class="print-question-number">${questionNumber}.</span>${esc(question.q)}</h4>
+      <div class="print-options">${question.options.map(function (option, index) {
+        return `<span>○ <b>${String.fromCharCode(65 + index)}.</b> ${esc(option)}</span>`;
+      }).join("")}</div>
+      <div class="print-answer-line"></div>
+    </article>`;
+  }
+
+  function renderPrintableBooklet(unit) {
+    const extra = extendedUnit(unit.id);
+    const mediation = extra.mediation;
+    const reading = extra.reading;
+    const words = unit.vocabulary.concat(extra.extraVocabulary);
+    const groups = practiceByTopic[unit.id];
+    const topicSheets = unit.topics.map(function (topic, topicIndex) {
+      const questionIndexes = groups[topicIndex];
+      return `<section class="print-topic">
+        ${topicMarkup(topic, topicIndex, unit)}
+        <div class="print-exercise-block"><h3>✍️ Practice these points</h3>
+          ${questionIndexes.map(function (questionIndex) { return printQuestion(extra.quiz[questionIndex], questionIndex + 1); }).join("")}
+        </div>
+      </section>`;
+    }).join("");
+    const quizKey = groups.map(function (questionIndexes, topicIndex) {
+      return `<p><strong>Topic ${topicIndex + 1}:</strong> ${questionIndexes.map(function (questionIndex) {
+        return `${questionIndex + 1} ${String.fromCharCode(65 + extra.quiz[questionIndex].answer)}`;
+      }).join(" · ")}</p>`;
+    }).join("");
+    const readingKey = reading.questions.map(function (question, index) {
+      return `${index + 1} ${String.fromCharCode(65 + question[2])}`;
+    }).join(" · ");
+
+    return `<section class="print-booklet">
+      <div class="print-toolbar"><p>Print this complete unit as a topic-by-topic study pack, or choose “Save as PDF” in the print dialog.</p><button class="button" type="button" data-print-booklet>🖨 Print / save as PDF</button></div>
+      <header class="print-cover">
+        <div class="eyebrow">CEEDCV · ENGLISH B2.1 · 2026–2027</div>
+        <h1>Unit ${unit.id}: ${esc(unit.title)}</h1>
+        <p>${esc(unit.focus)}</p>
+        <div class="print-cover-meta"><span>📅 ${esc(unit.weeks)}</span><span>🎯 ${esc(unit.output.label)}</span><span>✍️ Theory + exercises</span></div>
+        <p class="print-name-line">Name: ___________________________________________ Date: __________________</p>
+        <p class="print-credit">Materials created by Ana H. Iranzo with AI assistance</p>
+      </header>
+      <div class="print-contents"><strong>In this study pack:</strong> ${unit.topics.map(function (topic, index) { return `${index + 1}. ${esc(topic.title)}`; }).join(" · ")} · vocabulary · reading · speaking · exam task · mediation.</div>
+      ${topicSheets}
+      <section class="print-extra print-vocabulary">
+        <h2>🧠 Vocabulary review</h2>
+        <p>Read the meaning and example. Cover the first column and try to remember the expression.</p>
+        <table class="print-vocab-table"><thead><tr><th>Word / phrase</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+          ${words.map(function (word) { return `<tr><td><strong>${esc(word[0])}</strong></td><td>${esc(word[1])}</td><td>${esc(word[2])}</td></tr>`; }).join("")}
+        </tbody></table>
+      </section>
+      <section class="print-extra print-reading">
+        <h2>📖 Reading · ${esc(reading.title)}</h2>
+        <figure class="print-reading-image"><img src="${esc(extra.photo.src)}" alt="${esc(extra.photo.alt)}"><figcaption>${esc(extra.photo.credit)}</figcaption></figure>
+        <p class="print-reading-text">${esc(reading.text)}</p>
+        <h3>Check your understanding</h3>
+        ${reading.questions.map(function (question, index) {
+          return `<article class="print-question"><h4><span class="print-question-number">${index + 1}.</span>${esc(question[0])}</h4><div class="print-options">${question[1].map(function (option, optionIndex) {
+            return `<span>○ <b>${String.fromCharCode(65 + optionIndex)}.</b> ${esc(option)}</span>`;
+          }).join("")}</div><div class="print-answer-line"></div></article>`;
+        }).join("")}
+      </section>
+      <section class="print-extra print-speaking">
+        <h2>🗣️ Speaking prompts</h2>
+        <p>Speak for 45–90 seconds. Give reasons and examples; use the unit grammar.</p>
+        <ol>${extra.conversation.map(function (card) { return `<li><strong>${esc(card[0])}</strong><br><span>${esc(card[1])}</span><div class="print-writing-lines"></div></li>`; }).join("")}</ol>
+        <h3>🖼️ Describe the unit photo</h3>
+        <figure class="print-reading-image"><img src="${esc(extra.photo.src)}" alt="${esc(extra.photo.alt)}"><figcaption>${esc(extra.photo.credit)} · ${esc(extra.photo.source)} · ${esc(extra.photo.license)}</figcaption></figure>
+        <p><strong>Your task:</strong> ${esc(extra.photo.prompt)}</p>
+        <p><strong>Useful language:</strong> In this picture, I can see… · In the foreground/background… · It seems/might… · What stands out is…</p>
+        <p><strong>Image vocabulary:</strong> ${extra.photo.words.map(function (word) { return `${esc(word[0])} — ${esc(word[1])}`; }).join(" · ")}</p>
+        <div class="print-writing-lines print-writing-lines-tall"></div>
+      </section>
+      <section class="print-extra print-exam">
+        <h2>🎯 Exam task · ${esc(unit.output.title)}</h2>
+        <p>${esc(unit.output.prompt)}</p>
+        <h3>Plan your answer</h3>
+        <ol>${unit.output.structure.map(function (step) { return `<li>${esc(step)}</li>`; }).join("")}</ol>
+        <p><strong>Useful language:</strong> ${unit.output.phrases.map(esc).join(" · ")}</p>
+        <div class="print-writing-lines print-writing-lines-tall"></div>
+      </section>
+      <section class="print-extra print-mediation">
+        <h2>🌍 Mediation · ${esc(mediation.title)}</h2>
+        <p><strong>Scenario:</strong> ${esc(mediation.scenario)}</p>
+        <p><strong>Source information:</strong> ${esc(mediation.source)}</p>
+        <p><strong>Your reader:</strong> ${esc(mediation.audience)}</p>
+        <h3>Use the three-step process</h3>
+        <ol>${mediation.steps.map(function (step) { return `<li><strong>${esc(step[0])}:</strong> ${esc(step[1])}</li>`; }).join("")}</ol>
+        <p><strong>Your task:</strong> ${esc(mediation.task)}</p>
+        <div class="print-writing-lines print-writing-lines-tall"></div>
+      </section>
+      <section class="print-extra print-answer-key">
+        <h2>✅ Answer key · check after completing the exercises</h2>
+        ${quizKey}
+        <p><strong>Reading:</strong> ${readingKey}</p>
+        <h3>Mediation model answer</h3>
+        <p>${esc(mediation.model)}</p>
+      </section>
     </section>`;
   }
 
@@ -506,6 +630,7 @@
   }
 
   function renderUnit(unit, tab) {
+    main.classList.toggle("print-booklet-mode", tab === "booklet");
     const currentTab = tabs.find(function (item) { return item[0] === tab; }) || tabs[0];
     const done = state.completed.includes(unit.id);
     let content = renderTheory(unit);
@@ -515,6 +640,7 @@
     if (tab === "reading") content = renderReading(unit);
     if (tab === "speaking") content = renderSpeaking(unit);
     if (tab === "mediation") content = renderMediation(unit);
+    if (tab === "booklet") content = renderPrintableBooklet(unit);
 
     main.innerHTML = `
       <div class="eyebrow">UNIT ${unit.id} · ${esc(unit.weeks)} · CEED B2.1</div>
@@ -573,11 +699,15 @@
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
       sidebar.classList.toggle("open");
+      return;
+    }
+    if (target.hasAttribute("data-print-booklet")) {
+      window.print();
       return;
     }
     if (target.dataset.view) {
