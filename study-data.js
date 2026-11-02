@@ -182,6 +182,56 @@ window.CEED_STUDY = {
       [["The key point for visitors is…", "Lo más importante para los visitantes es…"], ["In other words,…", "En otras palabras,…"], ["You may want to check…", "Quizá quieras comprobar…"], ["What stands out is…", "Lo que más destaca es…"]]
     ]
   },
+  writingTasks: {
+    1: {
+      genre: "Personal blog post",
+      title: "The role music has played in my life",
+      prompt: "Write a blog post about the role music has played at different stages of your life. Include a memorable song, artist or event, explain how your tastes have changed, and describe how music affects you now.",
+      wordCount: "180–220 words",
+      planning: ["Open with an engaging title and a clear personal angle.", "Organise the post around different stages or memories.", "Include one specific example and explain why it matters.", "End with a reflection about music in your life today."],
+      note: "This is extra writing practice; the official Unit 1 Task 1 is an oral monologue."
+    },
+    2: {
+      genre: "Online review",
+      title: "Review a restaurant you have visited",
+      prompt: "A food website is asking readers to review a restaurant they have visited recently. Describe the place, food and service, then say whether you would recommend it and to whom.",
+      wordCount: "180–220 words",
+      planning: ["Give the restaurant's name and the context of your visit.", "Describe the atmosphere, food and service using specific details.", "Balance the positive points with any drawback.", "Finish with a clear recommendation for a particular reader."],
+      note: "This writing task follows the Unit 2 review focus."
+    },
+    3: {
+      genre: "Opinion essay",
+      title: "Should history courses include more minority stories?",
+      prompt: "Write an opinion essay discussing whether historical events taught at school should include more stories of minorities. Give reasons and relevant examples.",
+      wordCount: "180–220 words",
+      planning: ["Introduce the issue and state your position clearly.", "Develop two reasons in separate paragraphs, each with an example.", "Consider a different perspective and respond to it respectfully.", "Conclude by answering the question without introducing a new argument."],
+      note: "Discuss ideas and evidence respectfully; do not stereotype groups."
+    },
+    4: {
+      genre: "Formal letter of complaint",
+      title: "Complain about a disrupted journey",
+      prompt: "You travelled with an airline that lost your luggage and gave you poor assistance. Write a formal letter to its customer service department. Explain what happened, how it affected you and what solution you expect.",
+      wordCount: "180–220 words",
+      planning: ["Use a formal greeting and identify the journey or booking.", "Describe the events in a clear time order and explain their impact.", "State the action or remedy you expect from the company.", "Close politely; use Yours faithfully if you do not know the recipient's name."],
+      note: "Use a firm but polite formal register and avoid contractions."
+    },
+    5: {
+      genre: "Advice email",
+      title: "Help a friend adjust to life abroad",
+      prompt: "A friend has just moved abroad and is finding it difficult to get used to the new lifestyle. Write an email describing how you adapted to a change in your own life and giving your friend practical, tactful advice.",
+      wordCount: "180–220 words",
+      planning: ["Open warmly and acknowledge how your friend may be feeling.", "Describe one past habit or change from your own experience.", "Offer two or three practical suggestions with reasons.", "End supportively and invite your friend to write back."],
+      note: "This is extra writing practice; the official Unit 5 Task 5 focuses on oral mediation."
+    },
+    6: {
+      genre: "Written mediation email",
+      title: "Help a colleague plan a museum visit",
+      prompt: "Your English-speaking colleague wants to visit a local museum. Read the Spanish/Valencian website text and write an email summarising the opening times, prices, the most interesting exhibitions and any useful tips.",
+      wordCount: "100–140 words",
+      planning: ["Identify what your colleague needs to know to plan the visit.", "Select the relevant opening times, prices, exhibitions and practical tips from the source.", "Paraphrase the information in a natural email; do not translate sentence by sentence.", "Check that every fact matches the source and add no unsupported details."],
+      note: "This is the Unit 6 written-mediation task. Paste the Spanish/Valencian source text into Copilot before drafting."
+    }
+  },
   pastExercises: {
     completion: [
       { prompt: "Last Saturday, we ___ to the exhibition. (go)", answer: "went" },

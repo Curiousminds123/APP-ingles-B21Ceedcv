@@ -200,6 +200,17 @@ td strong { color: var(--teal); }
 .task-tick > span { color: #70827b; font-size: 17px; }
 .task-tick.done { border-color: #b6d7c1; background: #eff8f1; color: #286d4b; }
 .task-tick.done > span { color: #378452; }
+.writing-tutor { margin-top: 25px; padding: 20px; border: 1px solid #d5e5dc; border-radius: 14px; background: linear-gradient(145deg, #f3faf5, #f8f9ff); }
+.writing-tutor h2 { margin: 7px 0 8px; }
+.writing-tutor > p { margin: 8px 0; color: #506368; font-size: 13px; }
+.writing-tutor > p strong { color: var(--teal); }
+.writing-tutor .writing-tutor-note { padding: 9px 11px; border-left: 3px solid #d6aa4f; background: #fff9e9; color: #69582e; }
+.writing-plan { display: grid; gap: 7px; padding-left: 23px; color: #53676b; font-size: 13px; line-height: 1.55; }
+.writing-tutor-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+.writing-tutor-status { min-height: 21px; color: var(--teal); font-size: 12px; }
+.writing-prompt-preview { margin-top: 12px; border-top: 1px solid #dbe5e0; color: #43565b; }
+.writing-prompt-preview summary { padding: 12px 0 4px; color: var(--teal); font-size: 12px; font-weight: 700; cursor: pointer; }
+.writing-prompt-preview pre { max-height: 440px; overflow: auto; margin: 10px 0 0; padding: 14px; border: 1px solid #e1e7e4; border-radius: 9px; background: #fff; color: #394b50; font: 12px/1.65 "DM Sans", sans-serif; white-space: pre-wrap; overflow-wrap: anywhere; }
 .past-tense-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin: 15px 0; }
 .past-tense-grid article { padding: 15px; border: 1px solid #e0e9e3; border-radius: 10px; background: #fbfdfb; }
 .past-tense-grid article > span { color: var(--teal); font-size: 9px; font-weight: 800; letter-spacing: .08em; }
@@ -263,6 +274,9 @@ td strong { color: var(--teal); }
   .sidebar { position: fixed; top: 62px; bottom: 0; left: 0; z-index: 19; width: 270px; transform: translateX(-105%); transition: transform .2s ease; box-shadow: 12px 0 25px rgba(20,40,40,.1); overflow-y: auto; }
   .sidebar.open { transform: translateX(0); }
   main { padding: 23px 15px 50px; }
+  .writing-tutor { padding: 15px; }
+  .writing-tutor-actions { align-items: stretch; flex-direction: column; }
+  .writing-tutor-actions .button { width: 100%; }
   .unit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .unit-head { padding: 22px; }

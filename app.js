@@ -141,6 +141,10 @@
     if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4 || !extra.mediation.oralTask || !Array.isArray(extra.vocabularyTranslations) || extra.vocabularyTranslations.length !== unit.vocabulary.length + extra.extraVocabulary.length || !studyData.functionalLanguage[unit.id] || studyData.functionalLanguage[unit.id].length !== unit.topics.length || studyData.functionalLanguage[unit.id].some(function (phrases) { return phrases.length < 3; })) {
       throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions, 12 translated vocabulary cards and a complete oral mediation infographic.");
     }
+    const writingTask = studyData.writingTasks && studyData.writingTasks[unit.id];
+    if (!writingTask || !writingTask.genre || !writingTask.title || !writingTask.prompt || !writingTask.wordCount || !Array.isArray(writingTask.planning) || !writingTask.planning.length || !writingTask.note) {
+      throw new Error("Unit " + unit.id + " must have a complete writing tutor task and planning guide.");
+    }
     const assignedQuestions = practiceByTopic[unit.id].reduce(function (all, group) { return all.concat(group); }, []);
     if (assignedQuestions.length !== extra.quiz.length || new Set(assignedQuestions).size !== extra.quiz.length || assignedQuestions.some(function (index) { return index < 0 || index >= extra.quiz.length; })) {
       throw new Error("Unit " + unit.id + " practice questions must be assigned to exactly one theory topic.");
@@ -232,6 +236,88 @@
 
   function completionNotice() {
     return storageWarning ? `<div class="notice" role="status"><strong>Progress notice:</strong> ${esc(storageWarning)}</div>` : "";
+  }
+
+  function writingTutorPrompt(unit) {
+    const task = studyData.writingTasks[unit.id];
+    const targetGrammar = unit.topics.map(function (topic) { return topic.title; }).join("; ");
+    const vocabulary = unit.vocabulary.concat(extendedUnit(unit.id).extraVocabulary).map(function (item) { return item[0]; }).join(", ");
+    const usefulPhrases = unit.output.phrases.join(" | ");
+    const mediationInstructions = unit.id === 6
+      ? "This is mediation: check source accuracy, selection of relevant facts, paraphrasing, audience and purpose. If I have not supplied the Spanish/Valencian source, ask me to paste it before helping me draft. Never invent or add information that is absent from the source."
+      : "";
+    return `You are my supportive CEEDCV B2.1 English writing tutor. Help me improve my own writing step by step; do not write the whole text for me before I have tried.
+
+COURSE CONTEXT
+Unit ${unit.id}: ${unit.title}
+Text type: ${task.genre}
+Task: ${task.prompt}
+Target length: ${task.wordCount}
+Unit grammar and language: ${targetGrammar}
+Suggested unit vocabulary: ${vocabulary}
+Useful expressions: ${usefulPhrases}
+${mediationInstructions}
+
+HOW TO TUTOR ME
+1. If I have not supplied a draft, first help me understand the task and plan it. Ask one short question at a time, then help me create a paragraph outline. Do not give me a complete model answer unless I ask after attempting my own.
+2. When I share a draft, first check whether it answers every part of the task, fits the genre, audience, register and word limit. Count the words and tell me the result.
+3. Give feedback in clear, encouraging Spanish, but keep all corrected or suggested English phrases in English. Mention two things I did well and up to three priority improvements.
+4. Help me self-correct: quote the relevant short phrase, identify the error with a simple label (for example GR, VT, WO, PREP, COL, SP or REG), explain the rule briefly in Spanish and give a hint. Do not silently rewrite the whole draft. Let me try a revision.
+5. Check that I use the unit language naturally, not mechanically. Do not require every grammar point or vocabulary item; prioritise clarity and accuracy.
+6. After I send a revision, explain what improved and what still needs work. Then, if I ask, show a polished version that preserves my meaning and list the most useful corrections.
+7. Never invent personal details or, for mediation, facts not present in the source. Be respectful and supportive.
+
+INDICATIVE CEED B2.1 PRACTICE RUBRIC (not an official examination mark)
+After I submit a complete draft, give a provisional score out of 10: task achievement, genre, register and length (0–2.5); coherence and cohesion (0–2.5); range and appropriacy of vocabulary and B2.1 language (0–2.5); grammatical, lexical and spelling accuracy (0–2.5). Explain each score briefly and make clear that it is practice feedback, not an official grade.
+${mediationInstructions ? "For this mediation, give particular attention to selecting only relevant information, paraphrasing rather than copying, adapting it to the colleague and keeping all details faithful to the source." : ""}
+
+MY TASK
+${task.prompt}
+
+MY PLAN / DRAFT (I can leave this blank and plan with you):
+${unit.id === 6 ? "[Paste the Spanish/Valencian source text first, then your English email draft.]" : "[Paste my English draft here.]"}
+
+Planning guide:
+${task.planning.map(function (item, index) { return (index + 1) + ". " + item; }).join("\n")}
+
+Unit note: ${task.note}`;
+  }
+
+  async function copyWritingPrompt(unitId) {
+    const unit = unitById(unitId);
+    if (!unit) return;
+    const status = main.querySelector("[data-writing-prompt-status]");
+    let copied = false;
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(writingTutorPrompt(unit));
+        copied = true;
+      } catch (error) {
+        console.warn("Clipboard API could not copy the writing tutor prompt; trying the browser fallback.", error);
+      }
+    }
+    if (!copied) {
+      const textarea = document.createElement("textarea");
+      textarea.value = writingTutorPrompt(unit);
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      try {
+        textarea.select();
+        copied = document.execCommand("copy");
+      } catch (error) {
+        console.error("Could not copy the writing tutor prompt.", error);
+      } finally {
+        textarea.remove();
+      }
+    }
+    if (copied) {
+      if (status) status.textContent = "Prompt copied. Open Copilot and paste it into the chat.";
+    } else {
+      console.error("The browser did not copy the writing tutor prompt.");
+      if (status) status.textContent = "Automatic copying is unavailable. Open the prompt preview, select its text and copy it manually.";
+    }
   }
 
   function taskTickMarkup(unitId, taskId, label) {
@@ -594,6 +680,8 @@
 
   function renderSkills(unit) {
     const output = unit.output;
+    const writingTask = studyData.writingTasks[unit.id];
+    const prompt = writingTutorPrompt(unit);
     return `<section class="panel">
       <div class="section-visual" aria-hidden="true"><span>✦</span><span>PLAN</span><i></i><span>WRITE</span><i></i><span>REVIEW</span></div>
       <div class="task-callout">
@@ -611,6 +699,20 @@
       <ul class="strategy-list">${output.tips.map(function (tip, index) {
         return `<li><b>${String(index + 1).padStart(2, "0")}</b><span>${esc(tip)}</span></li>`;
       }).join("")}</ul>
+      <section class="writing-tutor" aria-labelledby="writing-tutor-title">
+        <div class="eyebrow">🤖 COPILOT · UNIT ${unit.id} WRITING TUTOR</div>
+        <h2 id="writing-tutor-title">${esc(writingTask.title)}</h2>
+        <p><strong>${esc(writingTask.genre)} · ${esc(writingTask.wordCount)}</strong></p>
+        <p>${esc(writingTask.prompt)}</p>
+        <p class="writing-tutor-note">${esc(writingTask.note)}</p>
+        <ol class="writing-plan">${writingTask.planning.map(function (step) { return `<li>${esc(step)}</li>`; }).join("")}</ol>
+        <div class="writing-tutor-actions">
+          <button class="button" type="button" data-copy-writing-prompt="${unit.id}">📋 Copy my tutor prompt</button>
+          <a class="button outline" href="https://copilot.microsoft.com/" target="_blank" rel="noopener noreferrer">↗ Open Copilot</a>
+        </div>
+        <p class="writing-tutor-status" data-writing-prompt-status role="status" aria-live="polite">Copy the prompt, open Copilot and paste it into a new chat. The tutor will guide you through planning, drafting and improving your work.</p>
+        <details class="writing-prompt-preview"><summary>Preview the full master prompt</summary><pre>${esc(prompt)}</pre></details>
+      </section>
       ${taskTickMarkup(unit.id, "skills", "Exam task")}
     </section>`;
   }
@@ -1012,7 +1114,7 @@
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], [data-copy-writing-prompt], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -1033,6 +1135,10 @@
     }
     if (target.hasAttribute("data-check-past")) {
       checkPastActivity(target.dataset.checkPast);
+      return;
+    }
+    if (target.hasAttribute("data-copy-writing-prompt")) {
+      copyWritingPrompt(Number(target.dataset.copyWritingPrompt));
       return;
     }
     if (target.hasAttribute("data-task-tick")) {
