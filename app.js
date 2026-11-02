@@ -45,7 +45,7 @@
     6: [["🖼️", "🖌️", "🏛️"], ["⬆️", "🔁", "💬"], ["🌡️", "✨", "💯"], ["ℹ️", "✂️", "👥"]]
   };
 
-  let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {}, practiceHistory: {}, readingHistory: {}, taskTicks: {}, pastActivityResults: {}, pastHistory: [] };
+  let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {}, practiceHistory: {}, readingHistory: {}, taskTicks: {}, pastActivityResults: {}, pastHistory: [], edPronunciationAnswers: {}, edPronunciationHistory: [] };
   let oralTimerInterval = null;
   let speechPlaybackId = 0;
   let storageWarning = "";
@@ -64,12 +64,31 @@
       state.taskTicks = saved.taskTicks && typeof saved.taskTicks === "object" ? saved.taskTicks : {};
       state.pastActivityResults = saved.pastActivityResults && typeof saved.pastActivityResults === "object" ? saved.pastActivityResults : {};
       state.pastHistory = Array.isArray(saved.pastHistory) ? saved.pastHistory : [];
+      state.edPronunciationAnswers = saved.edPronunciationAnswers && typeof saved.edPronunciationAnswers === "object" ? saved.edPronunciationAnswers : {};
+      state.edPronunciationHistory = Array.isArray(saved.edPronunciationHistory) ? saved.edPronunciationHistory : [];
     }
 
   } catch (error) {
     console.error("Could not read saved B2.1 progress.", error);
     storageWarning = "Saved progress could not be read. You can still use the course, but progress may not persist.";
   }
+
+  document.addEventListener("change", function (event) {
+    const select = event.target.closest("[data-ed-answer]");
+    if (!select) return;
+    const index = Number(select.dataset.edAnswer);
+    if (!Number.isInteger(index) || index < 0 || index >= studyData.edPronunciationExercises.length) return;
+    if (select.value) state.edPronunciationAnswers[index] = select.value;
+    else delete state.edPronunciationAnswers[index];
+    select.classList.remove("ed-correct", "ed-incorrect");
+    select.removeAttribute("aria-invalid");
+    const feedback = main.querySelector(`[data-ed-feedback="${index}"]`);
+    if (feedback) {
+      feedback.textContent = "";
+      feedback.className = "ed-answer-feedback";
+    }
+    save();
+  });
 
   function save() {
     try {
@@ -227,6 +246,11 @@
     if (routeName === "verbs") {
       renderNav(null, "verbs");
       renderPastVerbs();
+      return;
+    }
+    if (routeName === "pronunciation") {
+      renderNav(null, "pronunciation");
+      renderEdPronunciation();
       return;
     }
     if (routeName === "progress") {
@@ -536,8 +560,11 @@ Unit note: ${task.note}`;
           <article><span>📍 FINISHED EVENT</span><h3>Past simple</h3><p><b>Form:</b> subject + past form</p><p><b>Use:</b> completed event at a finished time.</p><p><i>We visited the gallery last Saturday.</i></p></article>
           <article><span>🎬 ACTION IN PROGRESS</span><h3>Past continuous</h3><p><b>Form:</b> was / were + verb-ing</p><p><b>Use:</b> background action or an action interrupted by another.</p><p><i>I was reading when the lights went out.</i></p></article>
           <article><span>⏪ EARLIER PAST</span><h3>Past perfect</h3><p><b>Form:</b> had + past participle</p><p><b>Use:</b> an action completed before another past event.</p><p><i>They had left before we arrived.</i></p></article>
+          <article><span>🔗 PAST ACTION WITH A LINK TO NOW</span><h3>Present perfect</h3><p><b>Form:</b> have / has + past participle · negative: haven't / hasn't + participle · question: Have / Has + subject + participle?</p><p><b>Use:</b> life experience, recent events or situations continuing now. Use <i>for</i> + period and <i>since</i> + starting point.</p><p><i>I've visited Rome twice. / She's lived here since 2020. / Have you ever tried it? / I haven't finished yet.</i></p><p><b>Contrast:</b> finished time → past simple: <i>I visited Rome last year.</i></p>
+            <div class="error-box wrong"><b>⚠️ Common error</b>I've seen her yesterday.</div><div class="error-box right"><b>✅ Better English</b>I saw her yesterday. · I've seen her recently.</div>
+          </article>
         </div>
-        <div class="notice"><strong>Remember:</strong> use the past simple after <i>did</i> in questions and negatives: <i>Did you go?</i> / <i>We didn't go.</i></div>
+        <div class="notice"><strong>Remember:</strong> use the past simple after <i>did</i> in questions and negatives: <i>Did you go?</i> / <i>We didn't go.</i> Don't use the present perfect with a finished time: <i>I saw her yesterday</i> (not <i>I've seen her yesterday</i>). Use <i>yet</i> in questions/negatives and <i>already</i> for something done earlier than expected.</div>
       </section>
       <section class="panel">
         <div class="section-title-row"><div><div class="eyebrow">REFERENCE · ${studyData.irregularVerbs.length} VERBS</div><h2>Irregular verbs table</h2></div><span class="pill">Base form · past simple · past participle</span></div>
@@ -556,7 +583,53 @@ Unit note: ${task.note}`;
           return `<article><span>${result ? "✓" : "○"}</span><div><strong>${label}</strong><p>${result ? result.score + " / " + result.total + " · " + new Date(result.date).toLocaleString() : "Not checked yet"}</p></div></article>`;
         }).join("")}</div>
         <a class="button outline small" href="#progress">Open all progress and score records →</a>
+        <a class="button outline small" href="#pronunciation">Practise the -ed pronunciation →</a>
       </section>`;
+  }
+
+  function renderEdPronunciation() {
+    const verbs = studyData.edPronunciationExercises;
+    const latest = state.edPronunciationHistory[state.edPronunciationHistory.length - 1];
+    main.innerHTML = `
+      <div class="eyebrow">EXTRA PRACTICE · LISTEN · CLASSIFY · CHECK</div>
+      <h1>How do you pronounce -ed?</h1>
+      <p class="lead">Listen to each regular past-tense verb in British or American English. Classify its final sound as /t/, /d/ or /ɪd/, then check your score. Your choices and attempts are saved on this device.</p>
+      ${completionNotice()}
+      <section class="panel ed-sound-guide">
+        <div class="eyebrow">🧠 THREE ENDINGS · ONE SIMPLE RULE</div><h2>Choose the sound, not the spelling</h2>
+        <div class="ed-sound-grid">
+          <article><span class="ed-sound-symbol">/t/</span><h3>Unvoiced sound</h3><p>After an unvoiced sound (except /t/).</p><p><i>work → worked · wash → washed</i></p><span class="ed-sound-cue">🔇 No voice vibration</span></article>
+          <article><span class="ed-sound-symbol">/d/</span><h3>Voiced sound</h3><p>After a voiced sound (except /d/) or a vowel.</p><p><i>play → played · clean → cleaned</i></p><span class="ed-sound-cue">🔊 Feel your throat vibrate</span></article>
+          <article><span class="ed-sound-symbol">/ɪd/</span><h3>Extra syllable</h3><p>Only after the sounds /t/ or /d/.</p><p><i>want → wanted · need → needed</i></p><span class="ed-sound-cue">🗣️ Say an extra syllable</span></article>
+        </div>
+        <div class="notice"><strong>Common mistake:</strong> the <i>-ed</i> ending does not always make an extra syllable. <i>Worked</i> has one syllable; <i>wanted</i> has two.</div>
+      </section>
+      <section class="panel ed-practice-panel" data-ed-activity>
+        <div class="section-title-row"><div><div class="eyebrow">30 VERBS · 10 PER SOUND</div><h2>Listen and classify</h2></div><span class="pill">🎧 Choose an accent for each word</span></div>
+        <p class="panel-intro">Listen to the past form, notice its final sound, and choose a category. Each audio control reads the example sentence in the selected accent.</p>
+        <div class="ed-verb-list">${verbs.map(function (verb, index) {
+          const answer = state.edPronunciationAnswers[index] || "";
+          return `<article class="ed-verb-row" data-ed-row="${index}">
+            <div class="ed-verb-number">${String(index + 1).padStart(2, "0")}</div>
+            <div class="ed-verb-word"><strong>${esc(verb.base)} → ${esc(verb.past)}</strong><span>${esc(verb.example)}</span></div>
+            <div class="ed-audio-buttons" aria-label="Listen to ${esc(verb.past)}"><button class="button outline small" type="button" data-speak-text="${esc(verb.example)}" data-speak-locale="en-GB" aria-label="Listen in British English">🔊 UK</button><button class="button outline small" type="button" data-speak-text="${esc(verb.example)}" data-speak-locale="en-US" aria-label="Listen in American English">🔊 US</button></div>
+            <label class="sr-only" for="ed-answer-${index}">Ending sound for ${esc(verb.past)}</label>
+            <select id="ed-answer-${index}" class="ed-sound-select" data-ed-answer="${index}" aria-label="Ending sound for ${esc(verb.past)}">
+              <option value="">Choose the sound…</option><option value="t"${answer === "t" ? " selected" : ""}>/t/</option><option value="d"${answer === "d" ? " selected" : ""}>/d/</option><option value="id"${answer === "id" ? " selected" : ""}>/ɪd/</option>
+            </select>
+            <span class="ed-answer-feedback" data-ed-feedback="${index}" aria-live="polite"></span>
+          </article>`;
+        }).join("")}</div>
+        <div class="ed-check-actions"><button class="button" type="button" data-check-ed>Check all 30 answers</button><button class="button outline small" type="button" data-stop-audio>⏹ Stop audio</button><span class="reading-audio-status" data-ed-audio-status role="status" aria-live="polite">Audio uses the English voices available on this device.</span></div>
+        <p class="past-result" data-ed-result role="status">${latest ? `Latest saved score: ${latest.score} / ${latest.total} · ${new Date(latest.date).toLocaleString()}` : "Complete the activity and check your answers to save a score."}</p>
+      </section>
+      <section class="panel"><div class="eyebrow">YOUR PRACTICE RECORD</div><h2>Saved attempts</h2>
+          <div data-ed-history>${renderEdHistory()}</div>
+      </section>`;
+  }
+
+  function renderEdHistory() {
+    return state.edPronunciationHistory.length ? `<div class="table-wrap"><table class="score-history-table"><thead><tr><th>Activity</th><th>Score</th><th>Date</th></tr></thead><tbody>${state.edPronunciationHistory.slice().reverse().map(function (record, index) { return `<tr><td>-ed pronunciation · attempt ${state.edPronunciationHistory.length - index}</td><td><strong>${record.score} / ${record.total}</strong></td><td>${esc(new Date(record.date).toLocaleString())}</td></tr>`; }).join("")}</tbody></table></div>` : `<div class="empty-state">Your checked scores will appear here and in My progress.</div>`;
   }
 
   function renderProgress() {
@@ -611,7 +684,6 @@ Unit note: ${task.note}`;
       const title = { completion: "Past tenses · Complete", ordering: "Past tenses · Reorder", matching: "Past tenses · Match" }[record.activity] || "Past tenses practice";
       scoreRows.push({ unit: "Past verbs lab", activity: title + " · attempt " + pastAttemptCounts[record.activity], score: record.score + " / " + record.total, date: record.date });
     });
-    scoreRows.sort(function (left, right) { return String(right.date).localeCompare(String(left.date)); });
     const completedChecks = course.units.reduce(function (total, unit) {
       const tasks = state.taskTicks[unit.id] || {};
       const answers = state.readingAnswers[unit.id] || {};
@@ -622,7 +694,12 @@ Unit note: ${task.note}`;
         ["speaking", "photo", "skills", "mediation"].filter(function (key) { return !!tasks[key]; }).length +
         (state.completed.includes(unit.id) ? 1 : 0);
     }, 0) + Object.keys(state.pastActivityResults).length;
-    const totalChecks = course.units.length * 8 + 3;
+    state.edPronunciationHistory.forEach(function (record, index) {
+      scoreRows.push({ unit: "Pronunciation lab", activity: "-ed pronunciation · attempt " + (index + 1), score: record.score + " / " + record.total, date: record.date });
+    });
+    scoreRows.sort(function (left, right) { return String(right.date).localeCompare(String(left.date)); });
+    const totalChecks = course.units.length * 8 + 4;
+    const completedProgressChecks = completedChecks + (state.edPronunciationHistory.length ? 1 : 0);
     main.innerHTML = `
       <div class="eyebrow">SAVED ON THIS DEVICE · COURSE CHECKLIST</div>
       <h1>My progress</h1>
@@ -630,7 +707,7 @@ Unit note: ${task.note}`;
       ${completionNotice()}
       <section class="stats-grid progress-summary">
         <div class="stat-card"><strong>${state.completed.length} / 6</strong><span>units completed</span></div>
-        <div class="stat-card"><strong>${completedChecks} / ${totalChecks}</strong><span>progress checks</span></div>
+        <div class="stat-card"><strong>${completedProgressChecks} / ${totalChecks}</strong><span>progress checks</span></div>
         <div class="stat-card"><strong>${scoreRows.length}</strong><span>saved scores</span></div>
         <div class="stat-card"><strong>${Object.keys(state.pastActivityResults).length} / 3</strong><span>past activities checked</span></div>
       </section>
@@ -653,7 +730,42 @@ Unit note: ${task.note}`;
           return `<article><span>${result ? "✓" : "○"}</span><div><strong>${label}</strong><p>${result ? result.score + " / " + result.total + " · " + new Date(result.date).toLocaleString() : "Not completed"}</p></div></article>`;
         }).join("")}</div>
         <a class="button outline small" href="#verbs">Go to the past verbs lab →</a>
+        <a class="button outline small" href="#pronunciation">Practise -ed pronunciation →</a>
       </section>`;
+  }
+
+  function checkEdPronunciation() {
+    const activity = main.querySelector("[data-ed-activity]");
+    const verbs = studyData.edPronunciationExercises;
+    if (!activity) return;
+    const selects = Array.from(activity.querySelectorAll("[data-ed-answer]"));
+    const unanswered = selects.find(function (select) { return !select.value; });
+    const result = activity.querySelector("[data-ed-result]");
+    if (unanswered) {
+      if (result) result.textContent = "Choose a sound for every verb before checking. " + (selects.filter(function (select) { return !select.value; }).length) + " answer(s) left.";
+      unanswered.focus();
+      return;
+    }
+    let score = 0;
+    selects.forEach(function (select) {
+      const index = Number(select.dataset.edAnswer);
+      const correct = verbs[index] && select.value === verbs[index].sound;
+      if (correct) score += 1;
+      select.classList.toggle("ed-correct", !!correct);
+      select.classList.toggle("ed-incorrect", !correct);
+      select.setAttribute("aria-invalid", String(!correct));
+      const feedback = activity.querySelector(`[data-ed-feedback="${index}"]`);
+      if (feedback) {
+        feedback.textContent = correct ? "✓ Correct" : "Answer: /" + (verbs[index].sound === "id" ? "ɪd" : verbs[index].sound) + "/";
+        feedback.className = "ed-answer-feedback " + (correct ? "good" : "bad");
+      }
+    });
+    const record = { score: score, total: verbs.length, date: new Date().toISOString() };
+    state.edPronunciationHistory.push(record);
+    if (result) result.textContent = "Saved score: " + score + " / " + verbs.length + ". Review the feedback, change answers if needed, and check again to record another attempt.";
+    const history = activity.parentElement.querySelector("[data-ed-history]");
+    if (history) history.innerHTML = renderEdHistory();
+    save();
   }
 
   function unitIllustrationMarkup(unit) {
@@ -724,17 +836,18 @@ Unit note: ${task.note}`;
     const words = unit.vocabulary.concat(extra.extraVocabulary);
     return `<section class="panel">
       <div class="section-title-row"><div><div class="eyebrow">12 VISUAL FLASHCARDS</div><h2>Vocabulary in context</h2></div><span class="pill">Tap a card to reveal it</span></div>
-      <p class="panel-intro">Think of the meaning first. Turn each card over to check its English definition, Spanish translation and a natural example sentence.</p>
+      <p class="panel-intro">Think of the meaning first. Turn each card over to check its English definition, Spanish translation and a natural example sentence. Use the UK or US audio buttons to hear the word in context.</p>
+      <p class="vocabulary-audio-status" data-vocabulary-audio-status role="status" aria-live="polite">🎧 Choose UK or US to hear each word and its example sentence.</p>
       <div class="flashcard-grid">${words.map(function (item, index) {
         const revealed = Array.isArray(state.flashcards[unit.id]) && state.flashcards[unit.id].includes(index);
         const emoji = studyData.flashcardEmojis[unit.id][index];
         const translation = extra.vocabularyTranslations[index];
-        return `<button class="flashcard${revealed ? " flipped" : ""}" type="button" aria-pressed="${revealed}" data-flashcard="${index}">
+        return `<div class="flashcard-item"><button class="flashcard${revealed ? " flipped" : ""}" type="button" aria-pressed="${revealed}" data-flashcard="${index}">
           <span class="flashcard-inner">
             <span class="flashcard-face flashcard-front"><span class="flashcard-icon" aria-hidden="true">${emoji}</span><span class="flashcard-term">${esc(item[0])}</span><span class="flashcard-hint">Think of the meaning · tap to flip</span></span>
             <span class="flashcard-face flashcard-back"><span class="flashcard-back-emoji" aria-hidden="true">${emoji}</span><span class="flashcard-definition"><b>Meaning:</b> ${esc(item[1])}</span><span class="flashcard-translation"><b>Spanish:</b> ${esc(translation)}</span><span class="flashcard-example"><b>Example:</b> ${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
           </span>
-        </button>`;
+          </button><div class="flashcard-audio" aria-label="Listen to ${esc(item[0])}"><button class="button outline small" type="button" data-speak-text="${esc(item[0] + ". " + item[2])}" data-speak-locale="en-GB" aria-label="Listen to ${esc(item[0])} in British English">🔊 UK</button><button class="button outline small" type="button" data-speak-text="${esc(item[0] + ". " + item[2])}" data-speak-locale="en-US" aria-label="Listen to ${esc(item[0])} in American English">🔊 US</button></div></div>`;
       }).join("")}</div>
     </section>
     <section class="panel">
@@ -1187,7 +1300,7 @@ Unit note: ${task.note}`;
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], [data-copy-writing-prompt], [data-speak-text], [data-speak-reading], [data-stop-audio], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-check-ed], [data-task-tick], [data-copy-writing-prompt], [data-speak-text], [data-speak-reading], [data-stop-audio], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -1210,15 +1323,21 @@ Unit note: ${task.note}`;
       checkPastActivity(target.dataset.checkPast);
       return;
     }
+    if (target.hasAttribute("data-check-ed")) {
+      checkEdPronunciation();
+      return;
+    }
     if (target.hasAttribute("data-copy-writing-prompt")) {
       copyWritingPrompt(Number(target.dataset.copyWritingPrompt));
       return;
     }
     if (target.hasAttribute("data-speak-text") || target.hasAttribute("data-speak-reading") || target.hasAttribute("data-stop-audio")) {
-      const section = target.closest(".pronunciation-practice, .reading-audio-controls");
-      const status = section ? section.querySelector("[data-pronunciation-status], [data-reading-audio-status]") : null;
+      const section = target.closest(".pronunciation-practice, .reading-audio-controls, .ed-practice-panel, .ed-check-actions, .flashcard-audio");
+      const status = section ? section.querySelector("[data-pronunciation-status], [data-reading-audio-status], [data-ed-audio-status]") : null;
+      const vocabularyPanel = target.closest(".flashcard-grid");
+      const vocabularyStatus = vocabularyPanel ? vocabularyPanel.parentElement.querySelector("[data-vocabulary-audio-status]") : null;
       if (target.hasAttribute("data-stop-audio")) {
-        stopSpeech(status);
+        stopSpeech(status || vocabularyStatus);
         return;
       }
       const locale = target.dataset.speakLocale;
@@ -1227,7 +1346,7 @@ Unit note: ${task.note}`;
         if (!unit || (locale !== "en-GB" && locale !== "en-US")) return;
         playSpeech(extendedUnit(unit.id).reading.title + ". " + extendedUnit(unit.id).reading.text, locale, status);
       } else if (locale === "en-GB" || locale === "en-US") {
-        playSpeech(target.dataset.speakText, locale, status);
+        playSpeech(target.dataset.speakText, locale, status || vocabularyStatus);
       }
       return;
     }
