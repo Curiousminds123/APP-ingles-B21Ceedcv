@@ -14,8 +14,18 @@
     ["practice", "20-question practice"],
     ["reading", "Reading"],
     ["speaking", "Speaking & photo"],
-    ["skills", "Exam task"]
+    ["skills", "Exam task"],
+    ["mediation", "Mediation studio"]
   ];
+  const sectionGuides = {
+    theory: [["01", "See the pattern"], ["02", "Compare examples"], ["03", "Avoid common errors"]],
+    vocabulary: [["01", "Preview the word"], ["02", "Flip the card"], ["03", "Use it in context"]],
+    practice: [["01", "Choose an answer"], ["02", "Read the feedback"], ["03", "Build your streak"]],
+    reading: [["01", "Read for meaning"], ["02", "Find text evidence"], ["03", "Check understanding"]],
+    speaking: [["01", "Observe the image"], ["02", "Describe details"], ["03", "Share an inference"]],
+    skills: [["01", "Understand the task"], ["02", "Plan your response"], ["03", "Review your work"]],
+    mediation: [["01", "Select key facts"], ["02", "Rephrase clearly"], ["03", "Adapt for your reader"]]
+  };
 
   let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
   let storageWarning = "";
@@ -62,8 +72,8 @@
 
   course.units.forEach(function (unit) {
     const extra = extendedUnit(unit.id);
-    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6) {
-      throw new Error("Unit " + unit.id + " must have 20 practice questions and 6 reading questions.");
+    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4) {
+      throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions and a complete mediation infographic.");
     }
   });
 
@@ -306,6 +316,7 @@
   function renderSkills(unit) {
     const output = unit.output;
     return `<section class="panel">
+      <div class="section-visual" aria-hidden="true"><span>✦</span><span>PLAN</span><i></i><span>WRITE</span><i></i><span>REVIEW</span></div>
       <div class="task-callout">
         <div class="task-label">${esc(output.label)}</div>
         <h3>${esc(output.title)}</h3>
@@ -322,6 +333,45 @@
         return `<li><b>${String(index + 1).padStart(2, "0")}</b><span>${esc(tip)}</span></li>`;
       }).join("")}</ul>
     </section>`;
+  }
+
+  function renderMediation(unit) {
+    const data = extendedUnit(unit.id).mediation;
+    return `<section class="panel mediation-panel">
+      <div class="section-visual mediation-visual" aria-hidden="true"><span>1 · SELECT</span><i></i><span>2 · REPHRASE</span><i></i><span>3 · ADAPT</span></div>
+      <div class="eyebrow">MEDIATION · UNIT ${unit.id}</div>
+      <h2>${esc(data.title)}</h2>
+      <p class="panel-intro">${esc(data.intro)}</p>
+      <div class="mediation-scenario">
+        <div class="mediation-scenario-icon" aria-hidden="true">${esc(data.icon)}</div>
+        <div><span class="eyebrow">PRACTICE SCENARIO · FICTIONAL SOURCE</span><h3>${esc(data.scenario)}</h3><p>${esc(data.source)}</p></div>
+      </div>
+      <div class="mediation-flow" aria-label="Mediation process">
+        ${data.steps.map(function (step, index) {
+          return `<article class="mediation-step"><span class="mediation-step-number">${index + 1}</span><div><h3>${esc(step[0])}</h3><p>${esc(step[1])}</p></div></article>`;
+        }).join("")}
+      </div>
+      <div class="mediation-audience"><span aria-hidden="true">◎</span><div><strong>Your reader</strong><p>${esc(data.audience)}</p></div></div>
+      <h3 class="mediation-subheading">The information at a glance</h3>
+      <div class="mediation-facts">
+        ${data.facts.map(function (fact) {
+          return `<article class="mediation-fact"><span class="mediation-fact-icon" aria-hidden="true">${esc(fact[0])}</span><strong>${esc(fact[1])}</strong><p>${esc(fact[2])}</p></article>`;
+        }).join("")}
+      </div>
+      <div class="mediation-language"><h3>Useful phrases</h3><div class="phrase-list">${data.phrases.map(function (phrase) { return `<span class="phrase">${esc(phrase)}</span>`; }).join("")}</div></div>
+      <div class="mediation-task"><div class="eyebrow">YOUR MEDIATION TASK</div><p>${esc(data.task)}</p></div>
+      <details class="mediation-model"><summary>Open a model answer</summary><p>${esc(data.model)}</p></details>
+      <div class="mediation-check"><strong>Before you share:</strong> ${data.checks.map(function (check) { return `<span>✓ ${esc(check)}</span>`; }).join("")}</div>
+    </section>`;
+  }
+
+  function renderSectionGuide(tab) {
+    const steps = sectionGuides[tab];
+    return `<div class="section-guide" aria-label="${esc(tabs.find(function (item) { return item[0] === tab; })[1])} learning steps">
+      ${steps.map(function (step, index) {
+        return `${index ? '<span class="section-guide-arrow" aria-hidden="true">→</span>' : ""}<span class="section-guide-step"><b>${step[0]}</b>${esc(step[1])}</span>`;
+      }).join("")}
+    </div>`;
   }
 
   function renderPractice(unit) {
@@ -437,6 +487,7 @@
     if (tab === "practice") content = renderPractice(unit);
     if (tab === "reading") content = renderReading(unit);
     if (tab === "speaking") content = renderSpeaking(unit);
+    if (tab === "mediation") content = renderMediation(unit);
 
     main.innerHTML = `
       <div class="eyebrow">UNIT ${unit.id} · ${esc(unit.weeks)} · CEED B2.1</div>
@@ -452,6 +503,7 @@
           return `<a class="tab${active ? " active" : ""}" role="tab" aria-selected="${active}" href="#unit/${unit.id}/${item[0]}">${esc(item[1])}</a>`;
         }).join("")}
       </div>
+      ${renderSectionGuide(currentTab[0])}
       ${completionNotice()}
       <div class="content-grid">
         <div>${content}</div>

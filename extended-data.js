@@ -480,3 +480,153 @@
     }
   };
 }());
+
+window.CEED_EXTENDED["1"].mediation = {
+  title: "Help a friend choose a live music event",
+  intro: "Read a short event listing, select the details your friend needs and explain them in your own words. Do not translate every line.",
+  icon: "♫",
+  scenario: "Community Sound Night · event listing",
+  source: "Fictional practice listing: three local acts; doors open at 18:30; the headline band starts at 20:00; tickets are available online and at the door.",
+  audience: "A friend who enjoys live music but wants to plan the evening and know when the main band performs.",
+  steps: [
+    ["Find the need", "Your friend asks about the main act and when to arrive."],
+    ["Select key facts", "Keep the number of acts, door time and headline start time."],
+    ["Rephrase and adapt", "Explain the schedule naturally; do not copy the listing."],
+    ["Check the message", "Make sure the two times are clear and in the right order."]
+  ],
+  facts: [
+    ["🎤", "Three local acts", "The event includes three performers."],
+    ["◷", "Doors: 18:30", "This is when visitors can enter."],
+    ["★", "Headline: 20:00", "The main band is scheduled to start at eight."],
+    ["↗", "Two ways to buy", "Tickets are available online or at the door."]
+  ],
+  phrases: ["The listing says that…", "The main act is due to…", "If you want to see…, you could…", "The key time to remember is…"],
+  task: "Send your friend a short message with the event schedule and one practical suggestion about arrival time.",
+  model: "The listing says that three local acts are performing. The doors open at 18:30, and the headline band is due on stage at 20:00. If you want to see the whole event, you could arrive when the doors open. Tickets are available online or at the door.",
+  checks: ["I selected only useful details.", "I kept the times accurate.", "I used my own words."]
+};
+
+window.CEED_EXTENDED["2"].mediation = {
+  title: "Explain a menu to someone with dietary questions",
+  intro: "Use the fictional menu information below to help a visitor choose. Pass on the source details carefully and recommend checking directly if an ingredient is unclear.",
+  icon: "♨",
+  scenario: "The Night Market Kitchen · sample menu card",
+  source: "Fictional practice menu: vegetable noodles are labelled vegetarian; the peanut sauce contains peanuts; staff can provide an ingredient list on request.",
+  audience: "A visitor who wants a vegetarian option and needs to avoid making assumptions about ingredients.",
+  steps: [
+    ["Identify the question", "The visitor wants to know which choice is labelled vegetarian."],
+    ["Select relevant information", "Mention the noodles, the peanut sauce and the available ingredient list."],
+    ["Paraphrase for the visitor", "Explain the labels simply without adding ingredients that are not listed."],
+    ["Give a safe next step", "Suggest asking staff for the ingredient list if they need more detail."]
+  ],
+  facts: [
+    ["🥬", "Vegetable noodles", "The sample menu labels this dish vegetarian."],
+    ["⚠", "Peanut sauce", "The sauce contains peanuts."],
+    ["▤", "Ingredient list", "Staff can provide more ingredient information."],
+    ["◎", "Check directly", "Use the restaurant's information for any specific dietary need."]
+  ],
+  phrases: ["This dish is labelled…", "The menu states that…", "It is worth checking whether…", "You can ask the staff for…"],
+  task: "Explain the menu options in a short spoken message. Include the peanut information and avoid promising that an unlisted dish is suitable.",
+  model: "The vegetable noodles are labelled vegetarian. The menu also says that the peanut sauce contains peanuts. If you need to check any other ingredients, the staff can provide an ingredient list, so it would be best to ask them before ordering.",
+  checks: ["I did not invent ingredients.", "I included the relevant caution.", "I made the information easy to act on."]
+};
+
+window.CEED_EXTENDED["3"].mediation = {
+  title: "Introduce a local history exhibition",
+  intro: "Turn a short exhibition notice into a clear explanation for a visitor. Separate what the notice confirms from any personal interpretation.",
+  icon: "▤",
+  scenario: "People and Places · community exhibition notice",
+  source: "Fictional practice notice: the exhibition uses photographs, personal accounts and archive documents; each display includes a date and a short source note.",
+  audience: "An international visitor who is interested in local history but is unfamiliar with the people and events.",
+  steps: [
+    ["Work out the visitor's interest", "They want to know what they will find in the exhibition."],
+    ["Choose the strongest details", "Select the three types of material and the information on each display."],
+    ["Explain the value", "Show how different sources offer different perspectives."],
+    ["Stay accurate and balanced", "Do not present one account as the only possible point of view."]
+  ],
+  facts: [
+    ["▧", "Photographs", "Visual records help visitors notice people and places."],
+    ["❝", "Personal accounts", "Individual voices add experiences and perspectives."],
+    ["▤", "Archive documents", "Historical records provide another source of evidence."],
+    ["◷", "Dates and sources", "Each display gives a date and a short source note."]
+  ],
+  phrases: ["The exhibition brings together…", "One display focuses on…", "The source note explains…", "This gives visitors a chance to…"],
+  task: "Recommend the exhibition to a visitor and explain how its different sources help people explore the past.",
+  model: "The exhibition brings together photographs, personal accounts and archive documents. Each display includes a date and a short source note, so visitors can see where the information comes from. It may be an interesting way to explore different perspectives on local history.",
+  checks: ["I explained the source types.", "I avoided unsupported claims.", "I used balanced language."]
+};
+
+window.CEED_EXTENDED["4"].mediation = {
+  title: "Help a traveller respond to a baggage problem",
+  intro: "Use a fictional airport help notice to explain the next steps. Keep practical instructions separate from assumptions about compensation or airline rules.",
+  icon: "✈",
+  scenario: "Airport Help Desk · delayed baggage notice",
+  source: "Fictional practice notice: report missing baggage at the airport help desk before leaving; keep the baggage receipt; use the reference number in later enquiries.",
+  audience: "A traveller whose suitcase has not arrived and who is unsure what to do before leaving the airport.",
+  steps: [
+    ["Focus on the immediate need", "The traveller needs clear steps they can take now."],
+    ["Order the instructions", "Report the problem, keep the receipt and note the reference number."],
+    ["Explain without jargon", "Use short action verbs and a calm, supportive tone."],
+    ["Avoid unsupported promises", "The notice does not specify compensation or delivery times."]
+  ],
+  facts: [
+    ["1", "Report it here", "Speak to the airport help desk before leaving."],
+    ["2", "Keep the receipt", "The baggage receipt may help identify the case."],
+    ["3", "Note the reference", "Use the reference number in future enquiries."],
+    ["!", "Check official updates", "The notice gives no delivery estimate or compensation details."]
+  ],
+  phrases: ["The notice advises you to…", "Before you leave, make sure…", "Keep a note of…", "It does not say whether…"],
+  task: "Explain the three immediate actions to the traveller and make clear which details they need to confirm with the airline.",
+  model: "The notice advises you to report the missing suitcase at the airport help desk before you leave. Keep your baggage receipt and make a note of the reference number for later enquiries. The notice does not give a delivery time, so you will need to check directly with the airline.",
+  checks: ["I put the steps in order.", "I did not promise an outcome.", "I pointed out what the source does not say."]
+};
+
+window.CEED_EXTENDED["5"].mediation = {
+  title: "Share information about a community activity",
+  intro: "Summarise a fictional community leaflet for someone considering a new activity. Pass on practical details while avoiding medical claims or assumptions.",
+  icon: "◎",
+  scenario: "Neighbourhood Walking Group · sample leaflet",
+  source: "Fictional practice leaflet: a weekly group walk has a shorter route option; participants can take breaks; contact the organiser to ask about access and meeting arrangements.",
+  audience: "A neighbour who would like to meet people but wants to know whether the activity can be adapted to their pace.",
+  steps: [
+    ["Understand the concern", "The neighbour wants to know whether they can take part comfortably."],
+    ["Select helpful details", "Include the shorter route, breaks and organiser contact."],
+    ["Use inclusive language", "Describe the options without labelling or judging the person."],
+    ["Encourage a suitable check", "Suggest contacting the organiser about access and arrangements."]
+  ],
+  facts: [
+    ["↔", "Shorter route", "The leaflet says there is a shorter option."],
+    ["Ⅱ", "Breaks are possible", "Participants can stop and rest during the walk."],
+    ["♧", "Weekly activity", "The group meets once a week, according to the leaflet."],
+    ["✉", "Ask the organiser", "Check access details and where the group meets."]
+  ],
+  phrases: ["The leaflet says that…", "There is also an option to…", "You could contact the organiser to…", "It may be worth asking about…"],
+  task: "Explain the flexible options and suggest how the neighbour can check whether the arrangements suit them.",
+  model: "The leaflet describes a weekly group walk with a shorter route option, and participants can take breaks. If you would like to find out more, you could contact the organiser to ask about access and the meeting arrangements. You can decide whether it feels right for you.",
+  checks: ["I used respectful, inclusive language.", "I shared only leaflet information.", "I left the choice with the listener."]
+};
+
+window.CEED_EXTENDED["6"].mediation = {
+  title: "Plan a museum visit with useful information",
+  intro: "Select the details a visitor needs from a fictional museum guide and organise them into a helpful message before they travel.",
+  icon: "▣",
+  scenario: "The City Gallery · visitor information card",
+  source: "Fictional practice guide: the current exhibition is on level two; step-free access is available by lift; visitors should check the gallery website for current opening times and ticket information.",
+  audience: "A visitor who is interested in the exhibition and wants to plan an accessible visit.",
+  steps: [
+    ["Find the visitor's priorities", "They need the exhibition location and access information."],
+    ["Select confirmed details", "Keep the floor, lift access and website reminder."],
+    ["Paraphrase and organise", "Present the information in the order the visitor will use it."],
+    ["Check changing details", "Opening times and ticket information should be checked on the current website."]
+  ],
+  facts: [
+    ["▣", "Exhibition · level two", "The guide locates the current exhibition on the second floor."],
+    ["↕", "Step-free access", "A lift is available for access."],
+    ["◷", "Opening times", "Check the gallery website for current hours."],
+    ["€", "Ticket information", "Confirm current ticket details before travelling."]
+  ],
+  phrases: ["The guide explains that…", "You can reach the exhibition by…", "For the latest information…", "It would be a good idea to check…"],
+  task: "Write a concise message with the exhibition location and access information, then direct the visitor to the source for details that may change.",
+  model: "The current exhibition is on level two, and the guide says that step-free access is available by lift. Before you travel, check the gallery website for the latest opening times and ticket information, as these details may change.",
+  checks: ["I kept the confirmed details accurate.", "I made the access information clear.", "I flagged details that may change."]
+};
