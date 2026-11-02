@@ -47,6 +47,7 @@
 
   let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {}, practiceHistory: {}, readingHistory: {}, taskTicks: {}, pastActivityResults: {}, pastHistory: [] };
   let oralTimerInterval = null;
+  let speechPlaybackId = 0;
   let storageWarning = "";
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
@@ -142,8 +143,9 @@
       throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions, 12 translated vocabulary cards and a complete oral mediation infographic.");
     }
     const writingTask = studyData.writingTasks && studyData.writingTasks[unit.id];
-    if (!writingTask || !writingTask.genre || !writingTask.title || !writingTask.prompt || !writingTask.wordCount || !Array.isArray(writingTask.planning) || !writingTask.planning.length || !writingTask.note) {
-      throw new Error("Unit " + unit.id + " must have a complete writing tutor task and planning guide.");
+    const flashcardEmojis = studyData.flashcardEmojis && studyData.flashcardEmojis[unit.id];
+    if (!writingTask || !writingTask.genre || !writingTask.title || !writingTask.prompt || !writingTask.wordCount || !Array.isArray(writingTask.planning) || !writingTask.planning.length || !writingTask.note || !Array.isArray(flashcardEmojis) || flashcardEmojis.length !== unit.vocabulary.length + extra.extraVocabulary.length) {
+      throw new Error("Unit " + unit.id + " must have a complete writing tutor, planning guide and illustrated vocabulary cards.");
     }
     const assignedQuestions = practiceByTopic[unit.id].reduce(function (all, group) { return all.concat(group); }, []);
     if (assignedQuestions.length !== extra.quiz.length || new Set(assignedQuestions).size !== extra.quiz.length || assignedQuestions.some(function (index) { return index < 0 || index >= extra.quiz.length; })) {
@@ -190,6 +192,8 @@
 
   function route() {
     stopOralTimer();
+    speechPlaybackId += 1;
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     const parts = location.hash.replace(/^#\/?/, "").split("/");
     const routeName = parts[0] || "home";
     sidebar.classList.remove("open");
@@ -236,6 +240,66 @@
 
   function completionNotice() {
     return storageWarning ? `<div class="notice" role="status"><strong>Progress notice:</strong> ${esc(storageWarning)}</div>` : "";
+  }
+
+  function playSpeech(text, locale, status) {
+    if (!("speechSynthesis" in window) || typeof window.SpeechSynthesisUtterance !== "function") {
+      if (status) status.textContent = "Audio playback is not supported by this browser.";
+      console.warn("Speech synthesis is not available in this browser.");
+      return;
+    }
+    const language = locale === "en-US" ? "American English" : "British English";
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(function (item) { return item.lang.toLowerCase().replace("_", "-").startsWith(locale.toLowerCase()); });
+    const utterance = new window.SpeechSynthesisUtterance(text);
+    const playbackId = ++speechPlaybackId;
+    utterance.lang = locale;
+    utterance.rate = 0.88;
+    if (voice) utterance.voice = voice;
+    window.speechSynthesis.cancel();
+    if (status) status.textContent = "Playing in " + language + (voice ? " · " + voice.name : " · using the voice available on this device") + ".";
+    utterance.onend = function () {
+      if (playbackId !== speechPlaybackId) return;
+      if (status) status.textContent = "Finished · " + language + (voice ? " · " + voice.name : "") + ".";
+    };
+    utterance.onerror = function (event) {
+      if (playbackId !== speechPlaybackId) return;
+      console.error("Could not play pronunciation audio.", event.error);
+      if (status) status.textContent = "Audio could not be played. Check that speech is enabled in your browser or device.";
+    };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopSpeech(status) {
+    if (!("speechSynthesis" in window)) {
+      if (status) status.textContent = "Audio playback is not supported by this browser.";
+      return;
+    }
+    speechPlaybackId += 1;
+    window.speechSynthesis.cancel();
+    if (status) status.textContent = "Audio stopped.";
+  }
+
+  function pronunciationPracticeMarkup() {
+    const samples = [
+      ["jam", "/dʒ/ · voiced", "JAM"],
+      ["major", "/dʒ/ · voiced", "MA·jor"],
+      ["stage", "/dʒ/ · voiced", "STAGE"],
+      ["chart", "/tʃ/ · voiceless", "CHART"],
+      ["catchy", "/tʃ/ · voiceless", "CATCH·y"],
+      ["chair", "/tʃ/ · voiceless", "CHAIR"],
+      ["The concert was unforgettable.", "Falling tone · finished idea", "↘"],
+      ["Would you like to hear the encore?", "Rising tone · yes/no question", "↗"]
+    ];
+    return `<section class="pronunciation-practice" aria-labelledby="pronunciation-practice-title">
+      <div class="eyebrow">🎧 LISTEN · COMPARE · REPEAT</div>
+      <h4 id="pronunciation-practice-title">Pronunciation audio · UK and US English</h4>
+      <p>Listen to each sound in two accents. Repeat it aloud and notice the difference between the voiced /dʒ/ and voiceless /tʃ/. Audio uses the English voices available on your device.</p>
+      <div class="pronunciation-sample-grid">${samples.map(function (sample) {
+        return `<article class="pronunciation-sample"><span class="pronunciation-ipa">${esc(sample[1])}</span><strong>${esc(sample[0])}</strong><span class="pronunciation-stress">${esc(sample[2])}</span><div class="audio-button-pair"><button class="button outline small" type="button" data-speak-text="${esc(sample[0])}" data-speak-locale="en-GB" aria-label="Listen to ${esc(sample[0])} in British English">🔊 UK</button><button class="button outline small" type="button" data-speak-text="${esc(sample[0])}" data-speak-locale="en-US" aria-label="Listen to ${esc(sample[0])} in American English">🔊 US</button></div></article>`;
+      }).join("")}</div>
+      <p class="pronunciation-audio-status" data-pronunciation-status role="status" aria-live="polite">Choose a voice to hear a sample.</p>
+    </section>`;
   }
 
   function writingTutorPrompt(unit) {
@@ -603,6 +667,7 @@ Unit note: ${task.note}`;
   function topicMarkup(topic, index, unit) {
     const explanation = extendedUnit(unit.id).explanations[index] || [];
     const functionalPhrases = studyData.functionalLanguage[unit.id][index];
+    const pronunciationPractice = unit.id === 1 && index === 3 ? pronunciationPracticeMarkup() : "";
     const rows = topic.rows.map(function (row) {
       return `<tr>${row.map(function (cell) { return `<td>${cell}</td>`; }).join("")}</tr>`;
     }).join("");
@@ -635,6 +700,7 @@ Unit note: ${task.note}`;
         <details class="theory-table-details"><summary>📊 Open the full comparison table</summary><div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details>
         ${explanation.length ? `<div class="theory-explanation"><h4>🧠 Understand the idea</h4>${explanation.map(function (paragraph, paragraphIndex) { return `<div class="explanation-point"><span aria-hidden="true">${paragraphIndex ? "🔎" : "📘"}</span><p>${esc(paragraph)}</p></div>`; }).join("")}</div>` : ""}
       </section>
+      ${pronunciationPractice}
       <div class="eyebrow theory-label">✨ EXAMPLES IN CONTEXT</div><div class="example-row">${examples}</div>
       <section class="functional-language">
         <div class="functional-language-heading"><span aria-hidden="true">💬</span><div><span class="eyebrow">FUNCTIONAL LANGUAGE</span><h4>Useful expressions for this topic</h4></div></div>
@@ -661,12 +727,12 @@ Unit note: ${task.note}`;
       <p class="panel-intro">Think of the meaning first. Turn each card over to check its English definition, Spanish translation and a natural example sentence.</p>
       <div class="flashcard-grid">${words.map(function (item, index) {
         const revealed = Array.isArray(state.flashcards[unit.id]) && state.flashcards[unit.id].includes(index);
-        const icons = ["✦", "◉", "↗", "▤", "♫", "✎", "◎", "⌁", "◇", "▣", "↔", "✧"];
+        const emoji = studyData.flashcardEmojis[unit.id][index];
         const translation = extra.vocabularyTranslations[index];
         return `<button class="flashcard${revealed ? " flipped" : ""}" type="button" aria-pressed="${revealed}" data-flashcard="${index}">
           <span class="flashcard-inner">
-            <span class="flashcard-face flashcard-front"><span class="flashcard-icon" aria-hidden="true">${icons[index % icons.length]}</span><span class="flashcard-term">${esc(item[0])}</span><span class="flashcard-hint">Think of the meaning · tap to flip</span></span>
-            <span class="flashcard-face flashcard-back"><span class="flashcard-definition"><b>Meaning:</b> ${esc(item[1])}</span><span class="flashcard-translation"><b>Spanish:</b> ${esc(translation)}</span><span class="flashcard-example"><b>Example:</b> ${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
+            <span class="flashcard-face flashcard-front"><span class="flashcard-icon" aria-hidden="true">${emoji}</span><span class="flashcard-term">${esc(item[0])}</span><span class="flashcard-hint">Think of the meaning · tap to flip</span></span>
+            <span class="flashcard-face flashcard-back"><span class="flashcard-back-emoji" aria-hidden="true">${emoji}</span><span class="flashcard-definition"><b>Meaning:</b> ${esc(item[1])}</span><span class="flashcard-translation"><b>Spanish:</b> ${esc(translation)}</span><span class="flashcard-example"><b>Example:</b> ${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
           </span>
         </button>`;
       }).join("")}</div>
@@ -951,6 +1017,13 @@ Unit note: ${task.note}`;
       </figure>
       <div class="reading-glossary-key" aria-label="Reading text annotation key"><span><i class="vocab-key"></i> Vocabulary</span><span><i class="grammar-key"></i> Topic grammar</span><span>Hover over or focus underlined text for the Spanish translation.</span></div>
       <p class="reading-text">${renderGlossedText(reading.text, reading.glossary)}</p>
+      <div class="reading-audio-controls" aria-label="Listen to the reading">
+        <strong>🎧 Listen to the text</strong>
+        <button class="button outline small" type="button" data-speak-reading="${unit.id}" data-speak-locale="en-GB">🔊 British English</button>
+        <button class="button outline small" type="button" data-speak-reading="${unit.id}" data-speak-locale="en-US">🔊 American English</button>
+        <button class="button outline small" type="button" data-stop-audio>⏹ Stop</button>
+        <span class="reading-audio-status" data-reading-audio-status role="status" aria-live="polite">Listen to the complete reading in your preferred accent. Audio uses the voices available on this device.</span>
+      </div>
       <div class="reading-score"><strong>${correctCount} / 6</strong><span>correct answers</span><button class="button outline small" type="button" data-reset-reading="${unit.id}">Reset answers</button></div>
       <h3>Check your understanding</h3>
       ${reading.questions.map(function (item, index) {
@@ -1114,7 +1187,7 @@ Unit note: ${task.note}`;
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], [data-copy-writing-prompt], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], [data-copy-writing-prompt], [data-speak-text], [data-speak-reading], [data-stop-audio], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -1139,6 +1212,23 @@ Unit note: ${task.note}`;
     }
     if (target.hasAttribute("data-copy-writing-prompt")) {
       copyWritingPrompt(Number(target.dataset.copyWritingPrompt));
+      return;
+    }
+    if (target.hasAttribute("data-speak-text") || target.hasAttribute("data-speak-reading") || target.hasAttribute("data-stop-audio")) {
+      const section = target.closest(".pronunciation-practice, .reading-audio-controls");
+      const status = section ? section.querySelector("[data-pronunciation-status], [data-reading-audio-status]") : null;
+      if (target.hasAttribute("data-stop-audio")) {
+        stopSpeech(status);
+        return;
+      }
+      const locale = target.dataset.speakLocale;
+      if (target.hasAttribute("data-speak-reading")) {
+        const unit = unitById(Number(target.dataset.speakReading));
+        if (!unit || (locale !== "en-GB" && locale !== "en-US")) return;
+        playSpeech(extendedUnit(unit.id).reading.title + ". " + extendedUnit(unit.id).reading.text, locale, status);
+      } else if (locale === "en-GB" || locale === "en-US") {
+        playSpeech(target.dataset.speakText, locale, status);
+      }
       return;
     }
     if (target.hasAttribute("data-task-tick")) {

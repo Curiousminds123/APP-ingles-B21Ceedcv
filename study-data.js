@@ -232,6 +232,14 @@ window.CEED_STUDY = {
       note: "This is the Unit 6 written-mediation task. Paste the Spanish/Valencian source text into Copilot before drafting."
     }
   },
+  flashcardEmojis: {
+    1: ["🎤", "🎶", "🎼", "🎧", "💓", "🎸", "🌟", "🎙️", "📋", "🏟️", "🎵", "💖"],
+    2: ["🥕", "🍲", "🍚", "🍽️", "😋", "💎", "🧂", "😐", "🌱", "🍴", "👨‍🍳", "📅"],
+    3: ["📢", "💡", "👥", "🔄", "🗣️", "⚖️", "📜", "🚪", "🪞", "🏅", "🏛️", "✊"],
+    4: ["⏳", "🧳", "🛫", "🗺️", "💷", "📉", "🎫", "✈️", "💳", "📝", "⚠️", "🛠️"],
+    5: ["🏋️", "🧘", "🏁", "🚶", "💛", "👵", "🏃", "🦴", "🎂", "🤗", "🧍", "🌿"],
+    6: ["🖼️", "🏛️", "👁️", "💭", "🏆", "📉", "🌄", "👤", "🖌️", "🔄", "🎟️", "♿"]
+  },
   pastExercises: {
     completion: [
       { prompt: "Last Saturday, we ___ to the exhibition. (go)", answer: "went" },

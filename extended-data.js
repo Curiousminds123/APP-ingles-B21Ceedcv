@@ -23,7 +23,7 @@
           "Although and however do not have the same grammar. Although introduces a dependent clause: Although the venue was small, the atmosphere was amazing. However usually connects two independent sentences: The venue was small. However, the atmosphere was amazing. A pause and suitable punctuation help make the relationship clear."
         ],
         [
-          "The sounds /dʒ/ and /tʃ/ are both made near the front of the mouth, but /dʒ/ is voiced and /tʃ/ is voiceless. Touch your throat as you say them: your voice vibrates for /dʒ/, as in jam and genre; it does not vibrate for /tʃ/, as in chair and catchy. Practise the contrast slowly before using it in a sentence.",
+          "The sounds /dʒ/ and /tʃ/ are both made near the front of the mouth, but /dʒ/ is voiced and /tʃ/ is voiceless. Touch your throat as you say them: your voice vibrates for /dʒ/, as in jam and major; it does not vibrate for /tʃ/, as in chair and catchy. The first sound in genre is /ʒ/, as in measure, not /dʒ/. Practise the contrast slowly before using it in a sentence.",
           "English intonation signals whether an idea is complete. A falling tone often marks a finished statement or the final item in a list. A rise can show that a list is continuing or that a real yes/no question is being asked. These are useful tendencies, not rigid rules: listen to the speaker's meaning and context."
         ]
       ],
@@ -53,7 +53,7 @@
         ["The lyrics were difficult, _____ the crowd knew every word.", ["because", "so", "but"], 2, "But contrasts two clauses without repeating although."],
         ["We arrived early _____ we wanted a good place near the stage.", ["because", "although", "however"], 0, "Because introduces the reason."],
         ["The singer was ill, _____ the concert was postponed.", ["although", "so", "whereas"], 1, "So introduces the result."],
-        ["Which word starts with /dʒ/?", ["chair", "genre", "chart"], 1, "Genre begins with the voiced sound /dʒ/."],
+        ["Which word starts with /dʒ/?", ["chair", "jam", "chart"], 1, "Jam begins with the voiced sound /dʒ/. Genre begins with /ʒ/."],
         ["Which word starts with /tʃ/?", ["jam", "major", "catchy"], 2, "Catchy begins with the voiceless sound /tʃ/."],
         ["Choose the natural agreement response: “I don't play the piano.”", ["So do I.", "Neither do I.", "Neither I play."], 1, "Use neither + auxiliary + subject after a negative statement."],
         ["Choose the clearest final sentence for a short talk.", ["Overall, that concert changed how I think about music.", "Although overall and because the concert.", "The concert, however because music."], 0, "A complete concluding sentence helps the listener recognise the end of the talk."]
