@@ -36,6 +36,14 @@
     5: [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]],
     6: [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9], [10, 11, 12, 13, 14], [15, 16, 17, 18, 19]]
   };
+  const topicIllustrations = {
+    1: [["🎧", "🎸", "🎤"], ["🗣️", "🔁", "🤝"], ["🧭", "🔗", "🎙️"], ["👄", "🔊", "🎶"]],
+    2: [["🍎", "🍲", "🍽️"], ["⏳", "📅", "✅"], ["🧩", "🔗", "↔️"], ["⭐", "✍️", "👥"]],
+    3: [["🕰️", "⏳", "📜"], ["👤", "🔎", "📖"], ["🧱", "🗣️", "🤝"], ["📝", "⚖️", "📣"]],
+    4: [["💭", "⏪", "🧳"], ["🔀", "🧩", "✈️"], ["⬆️", "🔁", "💬"], ["✉️", "📝", "📮"]],
+    5: [["🧒", "↩️", "🗓️"], ["🚶", "🔁", "🏡"], ["💬", "❓", "💡"]],
+    6: [["🖼️", "🖌️", "🏛️"], ["⬆️", "🔁", "💬"], ["🌡️", "✨", "💯"], ["ℹ️", "✂️", "👥"]]
+  };
 
   let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
   let oralTimerInterval = null;
@@ -337,6 +345,11 @@
     }).join("");
     return `<article class="topic-card" id="topic-${index}" tabindex="-1">
       <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><span class="topic-kicker">TOPIC ${String(index + 1).padStart(2, "0")} · GRAMMAR & LANGUAGE</span><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
+      <div class="topic-visual" role="img" aria-label="Emoji illustration for ${esc(topic.title)}">
+        <div class="topic-visual-emojis" aria-hidden="true">${topicIllustrations[unit.id][index].map(function (icon) { return `<span>${icon}</span>`; }).join("")}</div>
+        <div class="topic-visual-caption"><span>🎨 VISUAL MEMORY CUE</span><strong>${esc(topic.title)}</strong></div>
+        <span class="topic-visual-spark" aria-hidden="true">✦</span>
+      </div>
       <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
       <div class="grammar-flow" aria-label="Key language patterns">
         ${topic.rows.map(function (row, rowIndex) {

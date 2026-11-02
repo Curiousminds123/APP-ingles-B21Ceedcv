@@ -23,7 +23,7 @@ Each unit includes expanded visual explanations in English, tables, examples, co
 
 On wide screens, the course units appear in a persistent left sidebar. Opening a unit reveals a mini-index of its theory points; selecting a point opens the theory section and scrolls directly to it. Every unit section also shows a visual three-step learning guide. On smaller screens, the unit and topic navigation moves to a compact horizontal menu.
 
-The theory uses emoji-led visual grammar cards with quick rules, pattern maps, expanded explanations, examples and common-error corrections. The final tab in each unit opens a printable study pack containing the unit theory and topic-grouped practice, vocabulary with Spanish translations, reading and comprehension, speaking prompts, exam task, written and oral mediation activities, and answer keys. Use the print button and select a printer or “Save as PDF”.
+The theory uses emoji-led visual grammar cards, topic-specific emoji illustrations, quick rules, pattern maps, expanded explanations, examples and common-error corrections. The final tab in each unit opens a printable study pack containing the unit theory and topic-grouped practice, vocabulary with Spanish translations, reading and comprehension, speaking prompts, exam task, written and oral mediation activities, and answer keys. Use the print button and select a printer or “Save as PDF”.
 
 The year plan uses the supplied September 2026–June 2027 calendar. Dates for Unit 4 Part 3 and Unit 5 Part 2 are reproduced as shown in the source calendar; the app flags their out-of-sequence placement rather than silently changing them.
 
