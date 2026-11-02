@@ -410,9 +410,31 @@
     </section>`;
   }
 
+  function renderGlossedText(text, glossary) {
+    const entries = glossary.slice().sort(function (left, right) { return right[0].length - left[0].length; });
+    const pattern = new RegExp("\\b(?:" + entries.map(function (entry) {
+      return entry[0].replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }).join("|") + ")\\b", "gi");
+    const translations = {};
+    entries.forEach(function (entry) { translations[entry[0].toLowerCase()] = entry; });
+    let cursor = 0;
+    let html = "";
+    String(text).replace(pattern, function (match, offset) {
+      html += esc(text.slice(cursor, offset));
+      const entry = translations[match.toLowerCase()];
+      const isGrammar = entry[2] === "grammar";
+      const translation = (isGrammar ? "Grammar · " : "Vocabulary · ") + entry[1];
+      html += `<span class="reading-gloss${isGrammar ? " grammar-gloss" : ""}" tabindex="0" title="${esc(translation)}" data-tooltip="${esc(translation)}" aria-label="${esc(match + ". " + translation)}">${esc(match)}</span>`;
+      cursor = offset + match.length;
+      return match;
+    });
+    return html + esc(text.slice(cursor));
+  }
+
   function renderReading(unit) {
     const extra = extendedUnit(unit.id);
     const reading = extra.reading;
+    const photo = extra.photo;
     const answers = state.readingAnswers[unit.id] || {};
     const correctCount = reading.questions.reduce(function (total, question, index) {
       return total + (answers[index] === question[2] ? 1 : 0);
@@ -420,7 +442,12 @@
     return `<section class="panel reading-panel">
       <div class="eyebrow">UNIT ${unit.id} · READING COMPREHENSION</div>
       <h2>${esc(reading.title)}</h2>
-      <p class="reading-text">${esc(reading.text)}</p>
+      <figure class="reading-illustration">
+        <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy">
+        <figcaption>${esc(photo.credit)} <a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer">Source ↗</a> · <a href="${esc(photo.license)}" target="_blank" rel="noopener noreferrer">Licence ↗</a></figcaption>
+      </figure>
+      <div class="reading-glossary-key" aria-label="Reading text annotation key"><span><i class="vocab-key"></i> Vocabulary</span><span><i class="grammar-key"></i> Topic grammar</span><span>Hover over or focus underlined text for the Spanish translation.</span></div>
+      <p class="reading-text">${renderGlossedText(reading.text, reading.glossary)}</p>
       <div class="reading-score"><strong>${correctCount} / 6</strong><span>correct answers</span><button class="button outline small" type="button" data-reset-reading="${unit.id}">Reset answers</button></div>
       <h3>Check your understanding</h3>
       ${reading.questions.map(function (item, index) {

@@ -19,7 +19,7 @@ The app follows the six units, tasks and calendar shared for the course:
 5. Age and the body — past habits, getting used to, advice, descriptions and oral mediation.
 6. Art — passive voice, inversion, adjective gradability and written mediation.
 
-Each unit includes expanded visual explanations in English, tables, examples, common errors, vocabulary flashcards, a 20-question interactive practice set, a reading with six comprehension questions, speaking prompts, an illustrated photo-description activity, an exam-style task and a mediation studio with a topic-specific infographic, audience-focused task and model answer. Completion and learning activity are stored in the browser's local storage.
+Each unit includes expanded visual explanations in English, tables, examples, common errors, vocabulary flashcards, a 20-question interactive practice set, a reading illustrated with its open-licensed unit photo, six comprehension questions, and vocabulary and grammar expressions underlined with Spanish hover/focus translations. It also includes speaking prompts, an illustrated photo-description activity, an exam-style task and a mediation studio with a topic-specific infographic, audience-focused task and model answer. Completion and learning activity are stored in the browser's local storage.
 
 On wide screens, the course units appear in a persistent left sidebar. Opening a unit reveals a mini-index of its theory points; selecting a point opens the theory section and scrolls directly to it. Every unit section also shows a visual three-step learning guide. On smaller screens, the unit and topic navigation moves to a compact horizontal menu.
 

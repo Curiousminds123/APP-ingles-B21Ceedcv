@@ -630,3 +630,81 @@ window.CEED_EXTENDED["6"].mediation = {
   model: "The current exhibition is on level two, and the guide says that step-free access is available by lift. Before you travel, check the gallery website for the latest opening times and ticket information, as these details may change.",
   checks: ["I kept the confirmed details accurate.", "I made the access information clear.", "I flagged details that may change."]
 };
+
+window.CEED_EXTENDED["1"].reading.glossary = [
+  ["enjoyed listening", "disfrutaba escuchando", "grammar"],
+  ["had never been keen on", "nunca le había gustado mucho", "grammar"],
+  ["decided to go", "decidió ir", "grammar"],
+  ["while the audience was finding", "mientras el público buscaba", "grammar"],
+  ["sang along", "cantaron al ritmo de la canción", "vocabulary"],
+  ["headliner", "artista principal", "vocabulary"],
+  ["by the time", "para cuando", "grammar"],
+  ["neither did I", "yo tampoco", "grammar"],
+  ["has gone to", "ha ido a", "grammar"],
+  ["local artists", "artistas locales", "vocabulary"]
+];
+
+window.CEED_EXTENDED["2"].reading.glossary = [
+  ["had walked around", "habíamos paseado por", "grammar"],
+  ["to order", "al momento / según se pide", "vocabulary"],
+  ["freshly made", "recién hecho", "vocabulary"],
+  ["reasonable", "razonables / asequibles", "vocabulary"],
+  ["had never tried", "nunca había probado", "grammar"],
+  ["however", "sin embargo", "grammar"],
+  ["ahead of us", "delante de nosotros", "vocabulary"],
+  ["would recommend", "recomendaría", "grammar"],
+  ["although", "aunque", "grammar"],
+  ["on foot", "a pie", "vocabulary"]
+];
+
+window.CEED_EXTENDED["3"].reading.glossary = [
+  ["were preparing", "estaban preparando", "grammar"],
+  ["minority communities", "comunidades minoritarias", "vocabulary"],
+  ["had assumed", "habían dado por hecho", "grammar"],
+  ["after they interviewed", "después de que entrevistaran", "grammar"],
+  ["rather than give up", "en lugar de rendirse", "vocabulary"],
+  ["raised awareness", "aumentó la concienciación", "vocabulary"],
+  ["nor did it solve", "ni tampoco resolvió", "grammar"],
+  ["nevertheless", "no obstante", "grammar"],
+  ["relative accounts", "relatos de distintas personas", "vocabulary"],
+  ["historical evidence", "pruebas / evidencias históricas", "vocabulary"]
+];
+
+window.CEED_EXTENDED["4"].reading.glossary = [
+  ["had checked it in", "la había facturado", "grammar"],
+  ["Not until late that evening did", "No fue hasta tarde esa noche cuando", "grammar"],
+  ["had been sent", "había sido enviada", "grammar"],
+  ["should have given", "debería haber dado", "grammar"],
+  ["could have arranged", "podría haber organizado", "grammar"],
+  ["from happening again", "que vuelva a ocurrir", "grammar"],
+  ["formal complaint", "reclamación formal", "vocabulary"],
+  ["reimburse", "reembolsar", "vocabulary"],
+  ["although", "aunque", "grammar"],
+  ["baggage tag", "etiqueta del equipaje", "vocabulary"]
+];
+
+window.CEED_EXTENDED["5"].reading.glossary = [
+  ["has brought neighbours together", "ha unido a los vecinos", "grammar"],
+  ["used to spend", "solía pasar", "grammar"],
+  ["was not used to exercising", "no estaba acostumbrada a hacer ejercicio", "grammar"],
+  ["used to the distance", "acostumbrada a la distancia", "grammar"],
+  ["at the same pace", "al mismo ritmo", "vocabulary"],
+  ["accessible routes", "rutas accesibles", "vocabulary"],
+  ["well-being", "bienestar", "vocabulary"],
+  ["should ask", "deberían consultar", "grammar"],
+  ["may make it easier", "puede facilitarlo", "grammar"],
+  ["take part", "participar", "vocabulary"]
+];
+
+window.CEED_EXTENDED["6"].reading.glossary = [
+  ["was created", "fue creada", "grammar"],
+  ["left home", "se marcharon de casa", "vocabulary"],
+  ["are seated", "están sentadas", "grammar"],
+  ["is displayed", "se expone", "grammar"],
+  ["historical context", "contexto histórico", "vocabulary"],
+  ["what we infer", "lo que deducimos", "grammar"],
+  ["may infer", "podemos deducir", "grammar"],
+  ["so an exhibition can include", "por lo que una exposición puede incluir", "grammar"],
+  ["step-free access", "acceso sin escalones", "vocabulary"],
+  ["has arranged", "ha dispuesto / organizado", "grammar"]
+];
