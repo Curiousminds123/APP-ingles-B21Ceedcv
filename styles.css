@@ -101,6 +101,11 @@ p { line-height: 1.65; }
 .topic-icon { width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border-radius: 9px; background: #edf5f0; color: var(--teal); font-size: 15px; }
 .topic-title h3 { margin: 0; font-size: 15px; }
 .topic-title p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+.topic-illustration { margin: 14px 0; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: #f7f8f8; }
+.topic-illustration img { display: block; width: 100%; max-height: 230px; object-fit: cover; }
+.topic-illustration figcaption { padding: 8px 11px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.topic-illustration figcaption strong { color: var(--teal); }
+.topic-illustration a { color: var(--teal); font-weight: 700; }
 .visual-rule { display: flex; gap: 10px; padding: 11px 13px; border-left: 3px solid #55a47a; border-radius: 0 8px 8px 0; background: #f1f7f3; font-size: 12px; line-height: 1.6; }
 .visual-rule b { color: var(--teal); }
 .table-wrap { width: 100%; overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 9px; }
@@ -436,14 +441,19 @@ p { font-size: 15px; line-height: 1.75; }
 .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 16px; }
 .flashcard, .conversation-card { width: 100%; min-height: 174px; padding: 0; border: 0; border-radius: 12px; background: transparent; color: var(--ink); text-align: left; perspective: 900px; }
 .flashcard-inner, .conversation-inner { position: relative; display: block; min-height: 174px; transition: transform .45s; transform-style: preserve-3d; }
+.flashcard { min-height: 238px; }
+.flashcard .flashcard-inner { min-height: 238px; }
 .flashcard.flipped .flashcard-inner, .conversation-card.flipped .conversation-inner { transform: rotateY(180deg); }
 .flashcard-face, .conversation-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 17px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; backface-visibility: hidden; }
+.flashcard-face { gap: 7px; padding: 14px; }
 .flashcard-front { background: linear-gradient(145deg, #fff, #fbf0f2); }
 .flashcard-back, .conversation-back { transform: rotateY(180deg); background: #f5faf7; }
 .flashcard-icon { color: var(--teal); font-size: 24px; }
 .flashcard-term { color: var(--teal); font: 800 20px Manrope, sans-serif; }
 .flashcard-definition, .flashcard-example { font-size: 15px; line-height: 1.55; }
 .flashcard-example { color: var(--muted); font-style: italic; }
+.flashcard-translation { color: var(--teal); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.flashcard-definition b, .flashcard-example b, .flashcard-translation b { font-style: normal; }
 .flashcard-hint { color: var(--muted); font-size: 12px; }
 .flashcard:focus-visible, .conversation-card:focus-visible, .quiz-option:focus-visible, .button:focus-visible, .tab:focus-visible { outline: 3px solid #d9909e; outline-offset: 3px; }
 .quiz-topline, .quiz-progress-label, .reading-score, .conversation-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -807,6 +817,16 @@ main {
 .mediation-check { display: flex; flex-wrap: wrap; gap: 8px 15px; align-items: center; margin-top: 15px; color: #426d53; font-size: 13px; }
 .mediation-check strong { color: var(--ink); }
 .mediation-check span { display: inline-block; }
+.oral-mediation { margin-top: 20px; padding: 17px; border: 1px solid #dce8e1; border-radius: 12px; background: linear-gradient(145deg, #f8fbf8, #fff); }
+.oral-mediation h3 { margin: 5px 0 7px; color: var(--teal); }
+.oral-mediation > p { margin: 6px 0 12px; line-height: 1.6; }
+.oral-preparation { margin: 10px 0 15px; padding-left: 22px; color: var(--ink); line-height: 1.65; }
+.oral-timer-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+.oral-timer { min-width: 62px; color: var(--teal); font: 800 22px Manrope, sans-serif; text-align: center; }
+.oral-timer-status { color: var(--muted); font-size: 13px; }
+.oral-language { margin-top: 10px; }
+.oral-language > strong { display: block; margin-bottom: 7px; font-size: 13px; }
+.oral-check { padding-top: 10px; border-top: 1px solid var(--line); }
 
 @media (max-width: 960px) {
   body { display: block; }
@@ -992,6 +1012,11 @@ main {
   .print-topic .topic-card { padding: 7mm; box-shadow: none; }
   .topic-title h3 { font-size: 17pt; }
   .topic-title p, .visual-rule, .grammar-flow-card p, .explanation-point p { font-size: 10pt; }
+  .topic-illustration { margin: 5mm 0; }
+  .topic-illustration img { max-height: 45mm; }
+  .topic-illustration figcaption { padding: 3mm; font-size: 8pt; }
+  .oral-mediation { padding: 5mm; }
+  .oral-mediation, .mediation-fact { break-inside: avoid; page-break-inside: avoid; }
   .grammar-flow { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 5px; }
   .grammar-flow-card { padding: 7px; }
   .theory-table-details { margin: 7px 0; }

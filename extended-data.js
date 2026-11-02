@@ -35,6 +35,7 @@
         ["to sing along", "to sing at the same time as a recording or performer", "Everyone sang along to the final song."],
         ["moving", "causing strong feelings", "Her acoustic version was unexpectedly moving."]
       ],
+      vocabularyTranslations: ["concierto", "pegadizo/a", "letra de una canción", "interesarle mucho", "conmover", "actuación en directo", "artista principal", "coros", "lista de canciones", "local / recinto", "cantar a la vez", "emotivo/a"],
       quiz: quiz([
         ["I really enjoy _____ to live music.", ["to listen", "listening", "listen"], 1, "Enjoy is followed by a gerund: enjoy listening."],
         ["They decided _____ a local band after the festival.", ["to follow", "following", "follow"], 0, "Decide is followed by to + infinitive."],
@@ -114,6 +115,7 @@
         ["to whip up", "to prepare food quickly", "He whipped up a fresh tomato salad."],
         ["to book a table", "to reserve a place to eat", "We booked a table for eight o'clock."]
       ],
+      vocabularyTranslations: ["productos de temporada", "sabroso/a", "poco hecho/a", "atento/a", "comerse con ganas", "un lugar poco conocido y muy bueno", "salado/a", "soso/a", "de proximidad", "ración", "preparar rápidamente", "reservar mesa"],
       quiz: quiz([
         ["_____ food can bring people together.", ["A", "The", "— (no article)"], 2, "Use no article when food is discussed generally as an uncountable noun."],
         ["We tried _____ new restaurant on King Street.", ["a", "an", "the"], 0, "Use a to introduce one non-specific singular noun beginning with a consonant sound."],
@@ -193,6 +195,7 @@
         ["a landmark decision", "an important ruling that can influence later cases", "The court made a landmark decision."],
         ["to take a stand", "to publicly state your position", "Many students took a stand against discrimination."]
       ],
+      vocabularyTranslations: ["hacer campaña a favor de", "concienciar", "infrarrepresentado/a", "punto de inflexión", "cuestionar una opinión", "en conjunto / sopesándolo todo", "presentar una ley", "ser excluido/a", "cuestionar un estereotipo", "obtener reconocimiento", "decisión histórica", "defender una postura"],
       quiz: quiz([
         ["While the committee _____, campaigners waited outside.", ["met", "was meeting", "has met"], 1, "Past continuous sets the background action in progress."],
         ["By the time the law passed, campaigners _____ for years.", ["had organised", "organised", "have organise"], 0, "The campaign happened before another past event: use past perfect."],
@@ -272,6 +275,7 @@
         ["unacceptable", "not good enough to be accepted", "The lack of assistance was unacceptable."],
         ["to resolve an issue", "to find a solution to a problem", "Please resolve this issue within ten working days."]
       ],
+      vocabularyTranslations: ["escala", "quedarse tirado/a", "con exceso de reservas", "itinerario", "indemnización", "no estar a la altura de", "tarjeta de embarque", "vuelo de conexión", "reembolsar", "presentar una reclamación", "inaceptable", "resolver un problema"],
       quiz: quiz([
         ["The airline _____ passengers about the gate change.", ["should have informed", "should informed", "should has informed"], 0, "Use should + have + past participle for past criticism."],
         ["You _____ your passport in the hotel safe.", ["should have leave", "should have left", "should left"], 1, "Leave has the past participle left after have."],
@@ -347,6 +351,7 @@
         ["independent", "able to do things without help", "The programme helps older adults remain independent."],
         ["well-being", "the state of being healthy and content", "Social contact can improve well-being."]
       ],
+      vocabularyTranslations: ["mantenerse en forma", "rígido/a", "empezar a practicar", "desplazarse", "cariñoso/a y amable", "notar los efectos de la edad", "mantenerse activo/a", "articulación", "tener entre 70 y 79 años", "que brinda apoyo", "independiente", "bienestar"],
       quiz: quiz([
         ["I _____ play football after school, but I don't now.", ["used to", "am used to", "would to"], 0, "Used to + infinitive describes a past habit that has changed."],
         ["My grandmother _____ a small bookshop.", ["would own", "used to own", "is used to own"], 1, "Use used to for a past state such as owning something."],
@@ -426,6 +431,7 @@
         ["admission", "permission to enter a place, often for a fee", "Admission is free on the first Sunday."],
         ["step-free access", "a route without stairs or steps", "The north entrance offers step-free access."]
       ],
+      vocabularyTranslations: ["instalación artística", "exposición", "estar expuesto/a", "que invita a reflexionar", "obra maestra", "no estar a la altura de", "paisaje", "retrato", "pincelada", "en préstamo", "entrada / admisión", "acceso sin escalones"],
       quiz: quiz([
         ["The gallery _____ in 1902.", ["opened", "was opened", "was open by"], 1, "Past passive = was/were + past participle."],
         ["The mural _____ by a local artist last summer.", ["painted", "was painted", "was painting"], 1, "Use be + past participle for a passive action."],
@@ -502,6 +508,7 @@ window.CEED_EXTENDED["1"].mediation = {
   ],
   phrases: ["The listing says that…", "The main act is due to…", "If you want to see…, you could…", "The key time to remember is…"],
   task: "Send your friend a short message with the event schedule and one practical suggestion about arrival time.",
+  oralTask: "Explain the event schedule to your friend. Include when they can arrive, when the headline band performs and how tickets can be bought.",
   model: "The listing says that three local acts are performing. The doors open at 18:30, and the headline band is due on stage at 20:00. If you want to see the whole event, you could arrive when the doors open. Tickets are available online or at the door.",
   checks: ["I selected only useful details.", "I kept the times accurate.", "I used my own words."]
 };
@@ -527,6 +534,7 @@ window.CEED_EXTENDED["2"].mediation = {
   ],
   phrases: ["This dish is labelled…", "The menu states that…", "It is worth checking whether…", "You can ask the staff for…"],
   task: "Explain the menu options in a short spoken message. Include the peanut information and avoid promising that an unlisted dish is suitable.",
+  oralTask: "Help the visitor choose by explaining which dish is labelled vegetarian, what the menu says about peanuts and how to check other ingredients.",
   model: "The vegetable noodles are labelled vegetarian. The menu also says that the peanut sauce contains peanuts. If you need to check any other ingredients, the staff can provide an ingredient list, so it would be best to ask them before ordering.",
   checks: ["I did not invent ingredients.", "I included the relevant caution.", "I made the information easy to act on."]
 };
@@ -552,6 +560,7 @@ window.CEED_EXTENDED["3"].mediation = {
   ],
   phrases: ["The exhibition brings together…", "One display focuses on…", "The source note explains…", "This gives visitors a chance to…"],
   task: "Recommend the exhibition to a visitor and explain how its different sources help people explore the past.",
+  oralTask: "Introduce the exhibition to the visitor. Explain what kinds of sources it includes and how these can offer different perspectives on local history.",
   model: "The exhibition brings together photographs, personal accounts and archive documents. Each display includes a date and a short source note, so visitors can see where the information comes from. It may be an interesting way to explore different perspectives on local history.",
   checks: ["I explained the source types.", "I avoided unsupported claims.", "I used balanced language."]
 };
@@ -577,6 +586,7 @@ window.CEED_EXTENDED["4"].mediation = {
   ],
   phrases: ["The notice advises you to…", "Before you leave, make sure…", "Keep a note of…", "It does not say whether…"],
   task: "Explain the three immediate actions to the traveller and make clear which details they need to confirm with the airline.",
+  oralTask: "Guide the traveller through the steps to take before leaving the airport. Explain what to keep and what information they should confirm with the airline.",
   model: "The notice advises you to report the missing suitcase at the airport help desk before you leave. Keep your baggage receipt and make a note of the reference number for later enquiries. The notice does not give a delivery time, so you will need to check directly with the airline.",
   checks: ["I put the steps in order.", "I did not promise an outcome.", "I pointed out what the source does not say."]
 };
@@ -602,6 +612,7 @@ window.CEED_EXTENDED["5"].mediation = {
   ],
   phrases: ["The leaflet says that…", "There is also an option to…", "You could contact the organiser to…", "It may be worth asking about…"],
   task: "Explain the flexible options and suggest how the neighbour can check whether the arrangements suit them.",
+  oralTask: "Tell your neighbour about the shorter route and breaks, then suggest contacting the organiser to check access and meeting arrangements.",
   model: "The leaflet describes a weekly group walk with a shorter route option, and participants can take breaks. If you would like to find out more, you could contact the organiser to ask about access and the meeting arrangements. You can decide whether it feels right for you.",
   checks: ["I used respectful, inclusive language.", "I shared only leaflet information.", "I left the choice with the listener."]
 };
@@ -627,6 +638,7 @@ window.CEED_EXTENDED["6"].mediation = {
   ],
   phrases: ["The guide explains that…", "You can reach the exhibition by…", "For the latest information…", "It would be a good idea to check…"],
   task: "Write a concise message with the exhibition location and access information, then direct the visitor to the source for details that may change.",
+  oralTask: "Help the visitor plan their trip by explaining where the exhibition is and how to reach it without steps. Remind them to check current opening times and ticket details.",
   model: "The current exhibition is on level two, and the guide says that step-free access is available by lift. Before you travel, check the gallery website for the latest opening times and ticket information, as these details may change.",
   checks: ["I kept the confirmed details accurate.", "I made the access information clear.", "I flagged details that may change."]
 };

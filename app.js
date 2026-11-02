@@ -38,6 +38,7 @@
   };
 
   let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
+  let oralTimerInterval = null;
   let storageWarning = "";
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
@@ -50,6 +51,7 @@
       state.speakingCards = saved.speakingCards && typeof saved.speakingCards === "object" ? saved.speakingCards : {};
       state.speakingFlips = saved.speakingFlips && typeof saved.speakingFlips === "object" ? saved.speakingFlips : {};
     }
+
   } catch (error) {
     console.error("Could not read saved B2.1 progress.", error);
     storageWarning = "Saved progress could not be read. You can still use the course, but progress may not persist.";
@@ -64,6 +66,43 @@
       storageWarning = "Progress could not be saved in this browser.";
     }
     updateHeaderProgress();
+  }
+
+  function stopOralTimer() {
+    if (oralTimerInterval !== null) {
+      window.clearInterval(oralTimerInterval);
+      oralTimerInterval = null;
+    }
+  }
+
+  function resetOralTimer() {
+    stopOralTimer();
+    const timer = main.querySelector("[data-oral-timer]");
+    const status = main.querySelector("[data-oral-status]");
+    const start = main.querySelector("[data-start-oral]");
+    if (timer) timer.textContent = "1:30";
+    if (status) status.textContent = "Use the infographic above as your source.";
+    if (start) start.disabled = false;
+  }
+
+  function startOralTimer() {
+    resetOralTimer();
+    let remaining = 90;
+    const timer = main.querySelector("[data-oral-timer]");
+    const status = main.querySelector("[data-oral-status]");
+    const start = main.querySelector("[data-start-oral]");
+    if (!timer || !status || !start) return;
+    start.disabled = true;
+    status.textContent = "Your speaking time is running. Keep going!";
+    oralTimerInterval = window.setInterval(function () {
+      remaining -= 1;
+      timer.textContent = Math.floor(remaining / 60) + ":" + String(remaining % 60).padStart(2, "0");
+      if (remaining <= 0) {
+        stopOralTimer();
+        start.disabled = false;
+        status.textContent = "Time is up. Well done—review the speaking checklist.";
+      }
+    }, 1000);
   }
 
   function esc(value) {
@@ -82,8 +121,8 @@
 
   course.units.forEach(function (unit) {
     const extra = extendedUnit(unit.id);
-    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4) {
-      throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions and a complete mediation infographic.");
+    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4 || !extra.mediation.oralTask || !Array.isArray(extra.vocabularyTranslations) || extra.vocabularyTranslations.length !== unit.vocabulary.length + extra.extraVocabulary.length) {
+      throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions, 12 translated vocabulary cards and a complete oral mediation infographic.");
     }
     const assignedQuestions = practiceByTopic[unit.id].reduce(function (all, group) { return all.concat(group); }, []);
     if (assignedQuestions.length !== extra.quiz.length || new Set(assignedQuestions).size !== extra.quiz.length || assignedQuestions.some(function (index) { return index < 0 || index >= extra.quiz.length; })) {
@@ -130,6 +169,7 @@
   }
 
   function route() {
+    stopOralTimer();
     const parts = location.hash.replace(/^#\/?/, "").split("/");
     const routeName = parts[0] || "home";
     sidebar.classList.remove("open");
@@ -289,6 +329,10 @@
     }).join("");
     return `<article class="topic-card" id="topic-${index}" tabindex="-1">
       <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><span class="topic-kicker">TOPIC ${String(index + 1).padStart(2, "0")} · GRAMMAR & LANGUAGE</span><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
+      <figure class="topic-illustration">
+        <img src="${esc(extendedUnit(unit.id).photo.src)}" alt="${esc(extendedUnit(unit.id).photo.alt)}" loading="lazy">
+        <figcaption><strong>UNIT ${unit.id} · ${esc(unit.title)}</strong> — ${esc(extendedUnit(unit.id).photo.credit)} <a href="${esc(extendedUnit(unit.id).photo.source)}" target="_blank" rel="noopener noreferrer">Source ↗</a> · <a href="${esc(extendedUnit(unit.id).photo.license)}" target="_blank" rel="noopener noreferrer">Licence ↗</a></figcaption>
+      </figure>
       <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
       <div class="grammar-flow" aria-label="Key language patterns">
         ${topic.rows.map(function (row, rowIndex) {
@@ -315,14 +359,15 @@
     const words = unit.vocabulary.concat(extra.extraVocabulary);
     return `<section class="panel">
       <div class="section-title-row"><div><div class="eyebrow">12 VISUAL FLASHCARDS</div><h2>Vocabulary in context</h2></div><span class="pill">Tap a card to reveal it</span></div>
-      <p class="panel-intro">Think of the meaning first. Turn each card over to check the definition and see a natural example. Learn the whole phrase, not just a translation.</p>
+      <p class="panel-intro">Think of the meaning first. Turn each card over to check its English definition, Spanish translation and a natural example sentence.</p>
       <div class="flashcard-grid">${words.map(function (item, index) {
         const revealed = Array.isArray(state.flashcards[unit.id]) && state.flashcards[unit.id].includes(index);
         const icons = ["✦", "◉", "↗", "▤", "♫", "✎", "◎", "⌁", "◇", "▣", "↔", "✧"];
+        const translation = extra.vocabularyTranslations[index];
         return `<button class="flashcard${revealed ? " flipped" : ""}" type="button" aria-pressed="${revealed}" data-flashcard="${index}">
           <span class="flashcard-inner">
             <span class="flashcard-face flashcard-front"><span class="flashcard-icon" aria-hidden="true">${icons[index % icons.length]}</span><span class="flashcard-term">${esc(item[0])}</span><span class="flashcard-hint">Think of the meaning · tap to flip</span></span>
-            <span class="flashcard-face flashcard-back"><span class="flashcard-definition">${esc(item[1])}</span><span class="flashcard-example">${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
+            <span class="flashcard-face flashcard-back"><span class="flashcard-definition"><b>Meaning:</b> ${esc(item[1])}</span><span class="flashcard-translation"><b>Spanish:</b> ${esc(translation)}</span><span class="flashcard-example"><b>Example:</b> ${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
           </span>
         </button>`;
       }).join("")}</div>
@@ -372,7 +417,7 @@
           return `<article class="mediation-step"><span class="mediation-step-number">${index + 1}</span><div><h3>${esc(step[0])}</h3><p>${esc(step[1])}</p></div></article>`;
         }).join("")}
       </div>
-      <div class="mediation-audience"><span aria-hidden="true">◎</span><div><strong>Your reader</strong><p>${esc(data.audience)}</p></div></div>
+      <div class="mediation-audience"><span aria-hidden="true">◎</span><div><strong>Your audience</strong><p>${esc(data.audience)}</p></div></div>
       <h3 class="mediation-subheading">The information at a glance</h3>
       <div class="mediation-facts">
         ${data.facts.map(function (fact) {
@@ -381,6 +426,16 @@
       </div>
       <div class="mediation-language"><h3>Useful phrases</h3><div class="phrase-list">${data.phrases.map(function (phrase) { return `<span class="phrase">${esc(phrase)}</span>`; }).join("")}</div></div>
       <div class="mediation-task"><div class="eyebrow">YOUR MEDIATION TASK</div><p>${esc(data.task)}</p></div>
+      <section class="oral-mediation" aria-labelledby="oral-mediation-title">
+        <div class="eyebrow">🗣️ ORAL MEDIATION · SPEAKING CHALLENGE</div>
+        <h3 id="oral-mediation-title">Explain the infographic to your listener</h3>
+        <p>${esc(data.oralTask)}</p>
+        <ol class="oral-preparation"><li>Take 30 seconds to choose the three most useful facts.</li><li>Speak for 60–90 seconds, adapting the information to your listener.</li><li>Use your own words, keep every detail accurate and check whether your listener has a question.</li></ol>
+        <div class="oral-timer-controls"><button class="button outline small" type="button" data-start-oral>▶ Start 90-second timer</button><button class="button outline small" type="button" data-reset-oral>↺ Reset</button><strong class="oral-timer" data-oral-timer role="timer" aria-live="off">1:30</strong></div>
+        <p class="oral-timer-status" data-oral-status role="status" aria-live="polite">Use the infographic above as your source.</p>
+        <div class="oral-language"><strong>Useful speaking frames:</strong><div class="phrase-list">${data.phrases.map(function (phrase) { return `<span class="phrase">${esc(phrase)}</span>`; }).join("")}</div></div>
+        <div class="mediation-check oral-check"><strong>Speaking checklist:</strong> <span>✓ I selected relevant facts.</span><span>✓ I paraphrased clearly.</span><span>✓ I adapted my explanation to the listener.</span></div>
+      </section>
       <details class="mediation-model"><summary>Open a model answer</summary><p>${esc(data.model)}</p></details>
       <div class="mediation-check"><strong>Before you share:</strong> ${data.checks.map(function (check) { return `<span>✓ ${esc(check)}</span>`; }).join("")}</div>
     </section>`;
@@ -435,8 +490,8 @@
       <section class="print-extra print-vocabulary">
         <h2>🧠 Vocabulary review</h2>
         <p>Read the meaning and example. Cover the first column and try to remember the expression.</p>
-        <table class="print-vocab-table"><thead><tr><th>Word / phrase</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
-          ${words.map(function (word) { return `<tr><td><strong>${esc(word[0])}</strong></td><td>${esc(word[1])}</td><td>${esc(word[2])}</td></tr>`; }).join("")}
+        <table class="print-vocab-table"><thead><tr><th>Word / phrase</th><th>Spanish</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+          ${words.map(function (word, index) { return `<tr><td><strong>${esc(word[0])}</strong></td><td>${esc(extra.vocabularyTranslations[index])}</td><td>${esc(word[1])}</td><td>${esc(word[2])}</td></tr>`; }).join("")}
         </tbody></table>
       </section>
       <section class="print-extra print-reading">
@@ -478,6 +533,12 @@
         <ol>${mediation.steps.map(function (step) { return `<li><strong>${esc(step[0])}:</strong> ${esc(step[1])}</li>`; }).join("")}</ol>
         <p><strong>Your task:</strong> ${esc(mediation.task)}</p>
         <div class="print-writing-lines print-writing-lines-tall"></div>
+        <h3>🗣️ Oral mediation · speak for 60–90 seconds</h3>
+        <p><strong>Your listener:</strong> ${esc(mediation.audience)}</p>
+        <p><strong>Your spoken task:</strong> ${esc(mediation.oralTask)}</p>
+        <ol><li>Take 30 seconds to choose three useful facts from the infographic.</li><li>Explain them in your own words and adapt them to your listener.</li><li>Keep the details accurate and invite a question.</li></ol>
+        <p><strong>Useful speaking frames:</strong> ${mediation.phrases.map(esc).join(" · ")}</p>
+        <div class="print-writing-lines"></div>
       </section>
       <section class="print-extra print-answer-key">
         <h2>✅ Answer key · check after completing the exercises</h2>
@@ -699,7 +760,7 @@
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -708,6 +769,14 @@
     }
     if (target.hasAttribute("data-print-booklet")) {
       window.print();
+      return;
+    }
+    if (target.hasAttribute("data-start-oral")) {
+      startOralTimer();
+      return;
+    }
+    if (target.hasAttribute("data-reset-oral")) {
+      resetOralTimer();
       return;
     }
     if (target.dataset.view) {
