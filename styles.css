@@ -410,3 +410,92 @@ th { background: #f8ecef; }
   .section-heading { align-items: flex-start; margin-top: 25px; }
   .footer { padding: 10px 8px; font-size: 9px; }
 }
+
+/* Larger type and focused activities for comfortable independent study. */
+body { font-size: 16px; }
+p { font-size: 15px; line-height: 1.75; }
+.eyebrow { font-size: 11px; }
+.lead { font-size: 17px; }
+.panel { padding: 23px; }
+.panel h2 { font-size: 27px; }
+.panel h3 { font-size: 19px; }
+.panel-intro { font-size: 15px; line-height: 1.7; }
+.topic-title h3 { font-size: 20px; }
+.topic-title p { font-size: 14px; }
+.visual-rule { font-size: 15px; }
+.table-wrap th, .table-wrap td { padding: 11px 12px; font-size: 14px; line-height: 1.6; }
+.example-chip { padding: 11px 13px; font-size: 14px; line-height: 1.65; }
+.error-box { font-size: 14px; line-height: 1.6; }
+.why { font-size: 13px; }
+.theory-explanation { margin: 15px 0; padding: 15px 17px; border-radius: 9px; background: #f7f8fb; }
+.theory-explanation h4 { margin: 0 0 7px; color: var(--teal); font-size: 16px; }
+.theory-explanation p { margin: 7px 0 0; font-size: 15px; }
+.tab { padding: 10px 14px; font-size: 13px; }
+.button { font-size: 14px; }
+.button.small { font-size: 13px; }
+.flashcard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 16px; }
+.flashcard, .conversation-card { width: 100%; min-height: 174px; padding: 0; border: 0; border-radius: 12px; background: transparent; color: var(--ink); text-align: left; perspective: 900px; }
+.flashcard-inner, .conversation-inner { position: relative; display: block; min-height: 174px; transition: transform .45s; transform-style: preserve-3d; }
+.flashcard.flipped .flashcard-inner, .conversation-card.flipped .conversation-inner { transform: rotateY(180deg); }
+.flashcard-face, .conversation-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 17px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; backface-visibility: hidden; }
+.flashcard-front { background: linear-gradient(145deg, #fff, #fbf0f2); }
+.flashcard-back, .conversation-back { transform: rotateY(180deg); background: #f5faf7; }
+.flashcard-icon { color: var(--teal); font-size: 24px; }
+.flashcard-term { color: var(--teal); font: 800 20px Manrope, sans-serif; }
+.flashcard-definition, .flashcard-example { font-size: 15px; line-height: 1.55; }
+.flashcard-example { color: var(--muted); font-style: italic; }
+.flashcard-hint { color: var(--muted); font-size: 12px; }
+.flashcard:focus-visible, .conversation-card:focus-visible, .quiz-option:focus-visible, .button:focus-visible, .tab:focus-visible { outline: 3px solid #d9909e; outline-offset: 3px; }
+.quiz-topline, .quiz-progress-label, .reading-score, .conversation-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.quiz-topline, .quiz-progress-label { color: var(--muted); font-size: 13px; font-weight: 700; }
+.quiz-progress { height: 9px; margin: 9px 0 16px; overflow: hidden; border-radius: 9px; background: #f0e9eb; }
+.quiz-progress span { display: block; height: 100%; border-radius: inherit; background: var(--teal); transition: width .2s ease; }
+.quiz-question h3 { font-size: 19px; }
+.quiz-option { padding: 13px 15px; font-size: 15px; line-height: 1.55; }
+.option-letter { display: inline-grid; width: 25px; height: 25px; margin-right: 10px; place-items: center; border-radius: 50%; background: #f5f0f1; font-weight: 800; }
+.answer-explanation, .quiz-feedback { margin: 13px 0; padding: 12px 14px; border-radius: 8px; font-size: 14px; line-height: 1.6; }
+.answer-explanation.good, .quiz-feedback.good { background: #edf7f0; color: #286d4b; }
+.answer-explanation.bad, .quiz-feedback.bad { background: #fff1ef; color: #8d4037; }
+.quiz-next { margin-top: 5px; }
+.quiz-result { text-align: center; }
+.result-icon { font-size: 46px; }
+.result-score { display: grid; gap: 4px; margin: 18px 0; }
+.result-score strong { color: var(--teal); font: 800 38px Manrope, sans-serif; }
+.reading-text { padding: 19px; border-left: 4px solid var(--teal); border-radius: 0 9px 9px 0; background: #f8f8fa; font-size: 17px; line-height: 1.9; }
+.reading-score { justify-content: flex-start; margin: 16px 0; color: var(--muted); font-size: 14px; }
+.reading-score strong { color: var(--teal); font-size: 20px; }
+.reading-question { margin-top: 15px; padding: 15px; border: 1px solid var(--line); border-radius: 10px; }
+.reading-question h4 { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 12px; font-size: 16px; line-height: 1.55; }
+.reading-number { display: inline-grid; flex: 0 0 27px; width: 27px; height: 27px; place-items: center; border-radius: 50%; background: var(--mint); color: var(--teal); font-size: 13px; }
+.conversation-controls { margin: 13px 0; color: var(--muted); font-size: 14px; font-weight: 700; }
+.conversation-card { min-height: 210px; text-align: center; }
+.conversation-inner { min-height: 210px; }
+.conversation-face { align-items: center; padding: 24px; text-align: center; }
+.conversation-face strong { font: 700 22px Manrope, sans-serif; line-height: 1.45; }
+.flashcard-hint, .conversation-timer { font-size: 13px; color: var(--muted); }
+.speaking-self-check, .photo-prompt { margin-top: 14px; padding: 14px 16px; border-radius: 9px; background: #fbf0f2; font-size: 14px; line-height: 1.65; }
+.lesson-photo { margin: 15px 0; }
+.lesson-photo img { display: block; width: 100%; max-height: 500px; object-fit: cover; border-radius: 10px; background: #f0f1f3; }
+.lesson-photo figcaption { margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.lesson-photo a { color: var(--teal-dark); font-weight: 700; }
+.photo-prompt p { margin: 5px 0 0; }
+.description-help { margin-top: 10px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; line-height: 1.7; }
+.description-help summary { color: var(--teal); font-weight: 800; cursor: pointer; }
+.description-help ol { padding-left: 22px; }
+.description-help li { margin: 7px 0; }
+.photo-words { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; margin-top: 12px; }
+.photo-words div { display: grid; gap: 3px; padding: 9px; border-radius: 7px; background: #f8f8fa; }
+.photo-words strong { color: var(--teal); }
+.photo-words span { color: var(--muted); font-size: 13px; }
+.creator-credit { white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .brand img { width: 95px; }
+  .top-meta { max-width: 105px; }
+  .creator-credit { font-size: 10px !important; }
+  .assistance-credit { font-size: 9px; }
+  .reading-text { padding: 14px; font-size: 16px; }
+  .reading-score { flex-wrap: wrap; }
+  .panel { padding: 16px; }
+  .table-wrap th, .table-wrap td { padding: 9px; font-size: 13px; }
+}

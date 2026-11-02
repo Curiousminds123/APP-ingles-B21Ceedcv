@@ -9,18 +9,25 @@
   const STORE_KEY = "ceed-b21-progress-v1";
   const tabs = [
     ["theory", "Theory"],
-    ["vocabulary", "Vocabulary"],
-    ["skills", "Skills & tasks"],
-    ["practice", "Quick practice"]
+    ["vocabulary", "Vocabulary cards"],
+    ["practice", "20-question practice"],
+    ["reading", "Reading"],
+    ["speaking", "Speaking & photo"],
+    ["skills", "Exam task"]
   ];
 
-  let state = { completed: [], answers: {} };
+  let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
   let storageWarning = "";
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
     if (saved && typeof saved === "object") {
       state.completed = Array.isArray(saved.completed) ? saved.completed.filter(Number.isInteger) : [];
       state.answers = saved.answers && typeof saved.answers === "object" ? saved.answers : {};
+      state.drills = saved.drills && typeof saved.drills === "object" ? saved.drills : {};
+      state.readingAnswers = saved.readingAnswers && typeof saved.readingAnswers === "object" ? saved.readingAnswers : {};
+      state.flashcards = saved.flashcards && typeof saved.flashcards === "object" ? saved.flashcards : {};
+      state.speakingCards = saved.speakingCards && typeof saved.speakingCards === "object" ? saved.speakingCards : {};
+      state.speakingFlips = saved.speakingFlips && typeof saved.speakingFlips === "object" ? saved.speakingFlips : {};
     }
   } catch (error) {
     console.error("Could not read saved B2.1 progress.", error);
@@ -47,6 +54,17 @@
   function unitById(id) {
     return course.units.find(function (unit) { return unit.id === Number(id); });
   }
+
+  function extendedUnit(id) {
+    return window.CEED_EXTENDED[String(id)];
+  }
+
+  course.units.forEach(function (unit) {
+    const extra = extendedUnit(unit.id);
+    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6) {
+      throw new Error("Unit " + unit.id + " must have 20 practice questions and 6 reading questions.");
+    }
+  });
 
   function doneCount() {
     return state.completed.length;
@@ -208,7 +226,8 @@
       <div class="callout-red" style="margin-top:15px"><strong>Important:</strong> APTE / NO APTE is the final grading scale, not a numerical final mark. Exam conditions, permitted exceptions and technical requirements are set by the centre; this app does not replace official guidance.</div>`;
   }
 
-  function topicMarkup(topic) {
+  function topicMarkup(topic, index, unit) {
+    const explanation = extendedUnit(unit.id).explanations[index] || [];
     const rows = topic.rows.map(function (row) {
       return `<tr>${row.map(function (cell) { return `<td>${cell}</td>`; }).join("")}</tr>`;
     }).join("");
@@ -226,6 +245,7 @@
       <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
       <div class="visual-rule"><span aria-hidden="true">✦</span><span><b>Visual rule</b> · ${esc(topic.rule)}</span></div>
       <div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+      ${explanation.length ? `<div class="theory-explanation"><h4>How it works</h4>${explanation.map(function (paragraph) { return `<p>${esc(paragraph)}</p>`; }).join("")}</div>` : ""}
       <div class="eyebrow">EXAMPLES</div><div class="example-row">${examples}</div>
       <div class="errors"><div class="eyebrow">COMMON ERRORS</div>${errors}</div>
     </article>`;
@@ -235,22 +255,31 @@
     return `<section class="panel">
       <h2>Visual theory</h2>
       <p class="panel-intro">Read the rule, compare the patterns in the table, then notice the examples and common errors. All explanations are in English for B2.1 practice.</p>
-      ${unit.topics.map(topicMarkup).join("")}
+      ${unit.topics.map(function (topic, index) { return topicMarkup(topic, index, unit); }).join("")}
     </section>`;
   }
 
   function renderVocabulary(unit) {
+    const extra = extendedUnit(unit.id);
+    const words = unit.vocabulary.concat(extra.extraVocabulary);
     return `<section class="panel">
-      <h2>Vocabulary in context</h2>
-      <p class="panel-intro">Learn words as useful chunks. Read the meaning and example aloud, then make a new sentence connected to the unit topic.</p>
-      <div class="vocab-grid">${unit.vocabulary.map(function (item) {
-        return `<article class="vocab-item"><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span><em>${esc(item[2])}</em></article>`;
+      <div class="section-title-row"><div><div class="eyebrow">12 VISUAL FLASHCARDS</div><h2>Vocabulary in context</h2></div><span class="pill">Tap a card to reveal it</span></div>
+      <p class="panel-intro">Think of the meaning first. Turn each card over to check the definition and see a natural example. Learn the whole phrase, not just a translation.</p>
+      <div class="flashcard-grid">${words.map(function (item, index) {
+        const revealed = Array.isArray(state.flashcards[unit.id]) && state.flashcards[unit.id].includes(index);
+        const icons = ["✦", "◉", "↗", "▤", "♫", "✎", "◎", "⌁", "◇", "▣", "↔", "✧"];
+        return `<button class="flashcard${revealed ? " flipped" : ""}" type="button" aria-pressed="${revealed}" data-flashcard="${index}">
+          <span class="flashcard-inner">
+            <span class="flashcard-face flashcard-front"><span class="flashcard-icon" aria-hidden="true">${icons[index % icons.length]}</span><span class="flashcard-term">${esc(item[0])}</span><span class="flashcard-hint">Think of the meaning · tap to flip</span></span>
+            <span class="flashcard-face flashcard-back"><span class="flashcard-definition">${esc(item[1])}</span><span class="flashcard-example">${esc(item[2])}</span><span class="flashcard-hint">Tap to turn back</span></span>
+          </span>
+        </button>`;
       }).join("")}</div>
     </section>
     <section class="panel">
-      <h2>Make it yours</h2>
-      <p class="panel-intro">Choose three new items and use them in a short spoken or written answer. Check that the collocation and preposition match the example.</p>
-      <div class="notice"><strong>Independent practice:</strong> keep a vocabulary notebook with the word, a phrase it belongs to, one example of your own and (if useful) its pronunciation.</div>
+      <h2>Make the words stick</h2>
+      <p class="panel-intro">Choose three cards and make a true sentence of your own. Say each sentence aloud, then check whether the word is used with the same verb, preposition or grammar pattern as the example.</p>
+      <div class="notice"><strong>Memory tip:</strong> review the cards again tomorrow and use new words in your unit's conversation prompts.</div>
     </section>`;
   }
 
@@ -276,26 +305,106 @@
   }
 
   function renderPractice(unit) {
-    const answers = state.answers[unit.id] || {};
+    const questions = extendedUnit(unit.id).quiz;
+    const saved = state.drills[unit.id] || { index: 0, correct: 0, streak: 0, selected: null };
+    const index = Math.max(0, Math.min(Number(saved.index) || 0, questions.length));
+    const finished = index >= questions.length;
+    const question = questions[index];
+    if (finished) {
+      return `<section class="panel quiz-result">
+        <div class="result-icon">${saved.correct >= 15 ? "🏆" : "🌱"}</div>
+        <div class="eyebrow">UNIT ${unit.id} · PRACTICE COMPLETE</div>
+        <h2>You scored ${saved.correct} / 20</h2>
+        <p>${saved.correct >= 15 ? "Great work. Your answers show strong control of this unit's language." : "Good effort. Review the explanations and vocabulary cards, then try another round."}</p>
+        <div class="result-score"><strong>${Math.round(saved.correct / 20 * 100)}%</strong><span>${saved.correct} correct answers · 20 questions</span></div>
+        <button class="button" type="button" data-restart-drill="${unit.id}">↻ Try the 20 questions again</button>
+      </section>`;
+    }
+    const answered = Number.isInteger(saved.selected);
+    const correct = answered && saved.selected === question.answer;
     return `<section class="panel">
-      <h2>Quick practice</h2>
-      <p class="panel-intro">Choose the best answer. Read the feedback even when you are correct; it explains the rule. Your answers are saved in this browser.</p>
-      ${unit.quiz.map(function (question, index) {
-        const selected = Number.isInteger(answers[index]) ? answers[index] : null;
-        const correct = selected === question.answer;
-        const alreadyAnswered = selected !== null;
-        const feedbackClass = !alreadyAnswered ? "" : correct ? "good" : "bad";
-        const feedback = !alreadyAnswered ? "" : `${correct ? "Correct. " : "Not quite. "}${question.why}`;
-        return `<article class="quiz-question" data-question="${index}">
-          <h3><span class="unit-number" style="display:inline-grid;width:24px;height:24px;margin-right:6px;vertical-align:middle">${index + 1}</span>${esc(question.q)}</h3>
-          <div class="quiz-options">${question.options.map(function (option, optionIndex) {
-            const optionClass = alreadyAnswered && optionIndex === question.answer ? " correct" : alreadyAnswered && selected === optionIndex ? " incorrect" : "";
-            return `<button class="quiz-option${optionClass}" data-answer="${optionIndex}" data-question="${index}" ${alreadyAnswered ? "disabled" : ""}>${esc(option)}</button>`;
+      <div class="quiz-topline"><span>UNIT ${unit.id} · DUOLINGO-STYLE PRACTICE</span><span>⭐ ${saved.correct * 10} XP</span></div>
+      <h2>20-question challenge</h2>
+      <p class="panel-intro">One question at a time. Choose an answer, read the explanation, and continue. Your score and progress are saved on this device.</p>
+      <div class="quiz-progress-label"><span>Question ${index + 1} of 20</span><span>🔥 ${saved.streak} streak</span></div>
+      <div class="quiz-progress"><span style="width:${Math.round(index / 20 * 100)}%"></span></div>
+      <article class="quiz-question quiz-active" data-question="${index}">
+        <h3>${esc(question.q)}</h3>
+        <div class="quiz-options">${question.options.map(function (option, optionIndex) {
+          const optionClass = answered && optionIndex === question.answer ? " correct" : answered && saved.selected === optionIndex ? " incorrect" : "";
+          return `<button class="quiz-option${optionClass}" data-answer="${optionIndex}" data-question="${index}" ${answered ? "disabled" : ""}><span class="option-letter">${String.fromCharCode(65 + optionIndex)}</span>${esc(option)}</button>`;
+        }).join("")}</div>
+        ${answered ? `<div class="answer-explanation ${correct ? "good" : "bad"}" role="status"><strong>${correct ? "Correct!" : "Not quite."}</strong> ${esc(question.why)}</div>
+          <button class="button quiz-next" type="button" data-next-question="${unit.id}">${index === 19 ? "See my score" : "Continue"} →</button>` : ""}
+      </article>
+    </section>`;
+  }
+
+  function renderReading(unit) {
+    const extra = extendedUnit(unit.id);
+    const reading = extra.reading;
+    const answers = state.readingAnswers[unit.id] || {};
+    const correctCount = reading.questions.reduce(function (total, question, index) {
+      return total + (answers[index] === question[2] ? 1 : 0);
+    }, 0);
+    return `<section class="panel reading-panel">
+      <div class="eyebrow">UNIT ${unit.id} · READING COMPREHENSION</div>
+      <h2>${esc(reading.title)}</h2>
+      <p class="reading-text">${esc(reading.text)}</p>
+      <div class="reading-score"><strong>${correctCount} / 6</strong><span>correct answers</span><button class="button outline small" type="button" data-reset-reading="${unit.id}">Reset answers</button></div>
+      <h3>Check your understanding</h3>
+      ${reading.questions.map(function (item, index) {
+        const answered = Object.prototype.hasOwnProperty.call(answers, index);
+        const correct = answered && answers[index] === item[2];
+        return `<article class="reading-question" data-reading-question="${index}">
+          <h4><span class="reading-number">${index + 1}</span>${esc(item[0])}</h4>
+          <div class="quiz-options">${item[1].map(function (option, choice) {
+            const cls = answered && choice === item[2] ? " correct" : answered && choice === answers[index] ? " incorrect" : "";
+            return `<button class="quiz-option${cls}" data-reading-answer="${choice}" data-reading-index="${index}" ${answered ? "disabled" : ""}><span class="option-letter">${String.fromCharCode(65 + choice)}</span>${esc(option)}</button>`;
           }).join("")}</div>
-          <p class="quiz-feedback ${feedbackClass}" aria-live="polite">${esc(feedback)}</p>
-          ${alreadyAnswered && !correct ? `<button class="button outline small retry-answer" data-retry="${index}">Try again</button>` : ""}
+          ${answered ? `<p class="quiz-feedback ${correct ? "good" : "bad"}" role="status">${correct ? "Correct — well done." : "Not quite. Compare your choice with the text and try again."}</p>${!correct ? `<button class="button outline small" data-reading-retry="${index}" type="button">Try again</button>` : ""}` : ""}
         </article>`;
       }).join("")}
+    </section>`;
+  }
+
+  function renderSpeaking(unit) {
+    const extra = extendedUnit(unit.id);
+    const cardIndex = Math.max(0, Math.min(Number(state.speakingCards[unit.id]) || 0, extra.conversation.length - 1));
+    const card = extra.conversation[cardIndex];
+    const flipped = !!state.speakingFlips[unit.id];
+    const photo = extra.photo;
+    return `<section class="panel">
+      <div class="eyebrow">UNIT ${unit.id} · SPEAKING FLASHCARDS</div>
+      <h2>Speak about the topic</h2>
+      <p class="panel-intro">Choose a prompt, think for a moment, then speak for 45–90 seconds. Tap the card for a language prompt. You can practise alone by recording yourself.</p>
+      <div class="conversation-controls"><button class="button outline small" type="button" data-conversation-move="-1" data-unit-id="${unit.id}">← Previous</button><span>Card ${cardIndex + 1} of ${extra.conversation.length}</span><button class="button outline small" type="button" data-conversation-move="1" data-unit-id="${unit.id}">Next →</button></div>
+      <button class="conversation-card${flipped ? " flipped" : ""}" type="button" data-conversation-flip="${unit.id}" aria-pressed="${flipped}">
+        <span class="conversation-inner">
+          <span class="conversation-face conversation-front"><span class="flashcard-hint">SPEAKING PROMPT · TAP TO FLIP</span><strong>${esc(card[0])}</strong><span class="conversation-timer">◷ 45–90 seconds</span></span>
+          <span class="conversation-face conversation-back"><span class="flashcard-hint">LANGUAGE SUPPORT</span><strong>${esc(card[1])}</strong><span class="conversation-timer">Use your own ideas and examples.</span></span>
+        </span>
+      </button>
+      <div class="speaking-self-check"><strong>Before you finish:</strong> Did you answer every part? Did you give a reason or example? Did you use this unit's target grammar?</div>
+    </section>
+    <section class="panel photo-panel">
+      <div class="eyebrow">VISUAL SPEAKING · DESCRIBE THE PHOTO</div>
+      <h2>${esc(unit.title)}: look, notice, describe</h2>
+      <p class="panel-intro">Study the picture and describe only what you can see before adding careful ideas about what might be happening.</p>
+      <figure class="lesson-photo">
+        <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy">
+        <figcaption>${esc(photo.credit)} <a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer">Source ↗</a> · <a href="${esc(photo.license)}" target="_blank" rel="noopener noreferrer">Licence ↗</a></figcaption>
+      </figure>
+      <div class="photo-prompt"><strong>Your task</strong><p>${esc(photo.prompt)}</p></div>
+      <details class="description-help">
+        <summary>Open the photo-description guide</summary>
+        <ol><li><strong>Overview:</strong> In this picture, I can see…</li><li><strong>Place:</strong> It seems to be… / The scene is set…</li><li><strong>Position:</strong> In the foreground… / In the background… / On the left…</li><li><strong>Action:</strong> The person is …-ing; the people seem to be…</li><li><strong>Inference:</strong> They might be… / It looks as if…</li><li><strong>Opinion:</strong> What stands out is… / The atmosphere seems…</li></ol>
+        <p>Use <em>There is/are</em> for what exists, present continuous for visible actions, and <em>might/could</em> when you are making a guess rather than stating a fact.</p>
+      </details>
+      <details class="description-help photo-vocabulary">
+        <summary>Open image vocabulary (${photo.words.length} words)</summary>
+        <div class="photo-words">${photo.words.map(function (item) { return `<div><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`; }).join("")}</div>
+      </details>
     </section>`;
   }
 
@@ -306,6 +415,8 @@
     if (tab === "vocabulary") content = renderVocabulary(unit);
     if (tab === "skills") content = renderSkills(unit);
     if (tab === "practice") content = renderPractice(unit);
+    if (tab === "reading") content = renderReading(unit);
+    if (tab === "speaking") content = renderSpeaking(unit);
 
     main.innerHTML = `
       <div class="eyebrow">UNIT ${unit.id} · ${esc(unit.weeks)} · CEED B2.1</div>
@@ -344,17 +455,26 @@
   function answerQuestion(unitId, questionIndex, answerIndex) {
     const unit = unitById(unitId);
     if (!unit) return;
-    if (!state.answers[unit.id]) state.answers[unit.id] = {};
-    if (Object.prototype.hasOwnProperty.call(state.answers[unit.id], questionIndex)) return;
-    state.answers[unit.id][questionIndex] = answerIndex;
+    const extra = extendedUnit(unit.id);
+    const drill = state.drills[unit.id] || { index: 0, correct: 0, streak: 0, selected: null };
+    const question = extra.quiz[questionIndex];
+    if (!question || drill.index !== questionIndex || Number.isInteger(drill.selected)) return;
+    drill.selected = answerIndex;
+    if (answerIndex === question.answer) {
+      drill.correct += 1;
+      drill.streak += 1;
+    } else {
+      drill.streak = 0;
+    }
+    state.drills[unit.id] = drill;
     save();
     renderUnit(unit, "practice");
-    const question = main.querySelector(`[data-question="${questionIndex}"]`);
-    if (question) question.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    const questionElement = main.querySelector(`[data-question="${questionIndex}"]`);
+    if (questionElement) questionElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -372,6 +492,82 @@
     if (target.hasAttribute("data-answer")) {
       const route = location.hash.split("/");
       answerQuestion(route[1], Number(target.dataset.question), Number(target.dataset.answer));
+      return;
+    }
+    if (target.hasAttribute("data-next-question")) {
+      const id = Number(target.dataset.nextQuestion);
+      const drill = state.drills[id];
+      if (!drill || !Number.isInteger(drill.selected)) return;
+      state.drills[id] = { index: drill.index + 1, correct: drill.correct, streak: drill.streak, selected: null };
+      save();
+      renderUnit(unitById(id), "practice");
+      return;
+    }
+    if (target.hasAttribute("data-restart-drill")) {
+      const id = Number(target.dataset.restartDrill);
+      state.drills[id] = { index: 0, correct: 0, streak: 0, selected: null };
+      save();
+      renderUnit(unitById(id), "practice");
+      return;
+    }
+    if (target.hasAttribute("data-reading-answer")) {
+      const route = location.hash.split("/");
+      const id = Number(route[1]);
+      const questionIndex = Number(target.dataset.readingIndex);
+      if (!unitById(id) || !Number.isInteger(questionIndex)) return;
+      if (!state.readingAnswers[id]) state.readingAnswers[id] = {};
+      if (Object.prototype.hasOwnProperty.call(state.readingAnswers[id], questionIndex)) return;
+      state.readingAnswers[id][questionIndex] = Number(target.dataset.readingAnswer);
+      save();
+      renderUnit(unitById(id), "reading");
+      return;
+    }
+    if (target.hasAttribute("data-reading-retry")) {
+      const route = location.hash.split("/");
+      const id = Number(route[1]);
+      if (state.readingAnswers[id]) delete state.readingAnswers[id][target.dataset.readingRetry];
+      save();
+      renderUnit(unitById(id), "reading");
+      return;
+    }
+    if (target.hasAttribute("data-reset-reading")) {
+      const id = Number(target.dataset.resetReading);
+      delete state.readingAnswers[id];
+      save();
+      renderUnit(unitById(id), "reading");
+      return;
+    }
+    if (target.hasAttribute("data-flashcard")) {
+      const route = location.hash.split("/");
+      const id = Number(route[1]);
+      const index = Number(target.dataset.flashcard);
+      if (!unitById(id) || !Number.isInteger(index)) return;
+      if (!Array.isArray(state.flashcards[id])) state.flashcards[id] = [];
+      const cards = state.flashcards[id];
+      state.flashcards[id] = cards.includes(index) ? cards.filter(function (card) { return card !== index; }) : cards.concat(index);
+      target.classList.toggle("flipped", state.flashcards[id].includes(index));
+      target.setAttribute("aria-pressed", String(state.flashcards[id].includes(index)));
+      save();
+      return;
+    }
+    if (target.hasAttribute("data-conversation-flip")) {
+      const id = Number(target.dataset.conversationFlip);
+      state.speakingFlips[id] = !state.speakingFlips[id];
+      target.classList.toggle("flipped", state.speakingFlips[id]);
+      target.setAttribute("aria-pressed", String(state.speakingFlips[id]));
+      save();
+      return;
+    }
+    if (target.hasAttribute("data-conversation-move")) {
+      const id = Number(target.dataset.unitId);
+      const unit = unitById(id);
+      if (!unit) return;
+      const prompts = extendedUnit(id).conversation;
+      const current = Number(state.speakingCards[id]) || 0;
+      state.speakingCards[id] = (current + Number(target.dataset.conversationMove) + prompts.length) % prompts.length;
+      state.speakingFlips[id] = false;
+      save();
+      renderUnit(unit, "speaking");
       return;
     }
     if (target.hasAttribute("data-retry")) {
