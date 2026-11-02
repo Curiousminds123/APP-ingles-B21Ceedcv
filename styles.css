@@ -499,3 +499,166 @@ p { font-size: 15px; line-height: 1.75; }
   .panel { padding: 16px; }
   .table-wrap th, .table-wrap td { padding: 9px; font-size: 13px; }
 }
+
+/* Keep unit and topic navigation visible beside the lesson on wide screens. */
+body {
+  display: grid;
+  grid-template-columns: 258px minmax(0, 1fr);
+  align-content: start;
+}
+.topbar, .footer { grid-column: 1 / -1; }
+.course-navigation {
+  position: relative;
+  top: auto;
+  z-index: 18;
+  grid-column: 1;
+  grid-row: 2;
+  align-self: stretch;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: #fff;
+}
+.sidebar {
+  position: sticky;
+  top: 82px;
+  width: 258px;
+  height: calc(100vh - 82px);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
+  margin: 0;
+  padding: 16px 14px 68px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 0;
+  background: #fff;
+}
+.primary-links { display: grid; gap: 3px; }
+.primary-links .nav-link {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 11px;
+  font-size: 13px;
+}
+.side-section-label {
+  padding: 4px 10px 0;
+  color: #84919b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+#unit-nav {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 3px;
+  overflow: visible;
+}
+.unit-link {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+}
+.unit-number { width: 26px; height: 26px; }
+#topic-nav {
+  display: grid;
+  gap: 3px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+#topic-nav[hidden] { display: none; }
+.topic-nav-heading { padding: 5px 8px 3px; }
+.topic-nav-link {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 7px;
+  align-items: start;
+  padding: 7px 8px;
+  border-radius: 8px;
+  color: #56636c;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-decoration: none;
+}
+.topic-nav-link:hover, .topic-nav-link.active { background: var(--mint); color: var(--teal); }
+.topic-nav-number { color: #9a7a80; font-size: 10px; font-weight: 800; }
+main {
+  grid-column: 2;
+  grid-row: 2;
+  width: min(1120px, 100%);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 30px clamp(18px, 3vw, 42px) 82px;
+}
+.topic-card { scroll-margin-top: 105px; }
+
+@media (max-width: 960px) {
+  body { display: block; }
+  .course-navigation {
+    position: sticky;
+    top: 82px;
+    z-index: 18;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,.97);
+  }
+  .sidebar {
+    position: static;
+    width: min(1120px, 100%);
+    height: auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+    margin: 0 auto;
+    padding: 7px 12px;
+    overflow: visible;
+  }
+  .primary-links { display: flex; justify-content: flex-start; overflow-x: auto; }
+  .primary-links .nav-link { width: auto; flex: 0 0 auto; white-space: nowrap; }
+  .side-section-label { padding: 3px 6px 0; }
+  #unit-nav { display: flex; gap: 4px; overflow-x: auto; }
+  .unit-link {
+    width: auto;
+    flex: 0 0 auto;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 5px 8px 5px 5px;
+    border-radius: 20px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .unit-number { width: 23px; height: 23px; }
+  #topic-nav {
+    display: flex;
+    gap: 4px;
+    padding-top: 5px;
+    overflow-x: auto;
+  }
+  #topic-nav[hidden] { display: none; }
+  .topic-nav-heading { flex: 0 0 auto; align-self: center; padding: 4px 6px; }
+  .topic-nav-link {
+    flex: 0 0 auto;
+    grid-template-columns: 19px minmax(0, 1fr);
+    gap: 5px;
+    max-width: 220px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  main { width: min(1060px, 100%); padding: 24px 20px 82px; }
+}
+@media (max-width: 600px) {
+  .course-navigation { top: 72px; }
+  main { padding: 19px 13px 70px; }
+  .topic-card { scroll-margin-top: 180px; }
+}

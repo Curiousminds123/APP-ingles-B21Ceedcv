@@ -6,6 +6,7 @@
   const main = document.getElementById("main");
   const sidebar = document.getElementById("sidebar");
   const nav = document.getElementById("unit-nav");
+  const topicNav = document.getElementById("topic-nav");
   const STORE_KEY = "ceed-b21-progress-v1";
   const tabs = [
     ["theory", "Theory"],
@@ -78,7 +79,7 @@
     document.getElementById("top-progress").textContent = progressPercent() + "% complete";
   }
 
-  function renderNav(activeId, activeView) {
+  function renderNav(activeId, activeView, activeTopic) {
     nav.innerHTML = course.units.map(function (unit) {
       const active = Number(activeId) === unit.id;
       const done = state.completed.includes(unit.id);
@@ -87,6 +88,17 @@
         <span>${esc(unit.title)}</span><span class="unit-check">${done ? "✓" : ""}</span>
       </button>`;
     }).join("");
+
+    const activeUnit = unitById(activeId);
+    topicNav.hidden = !activeUnit;
+    topicNav.innerHTML = activeUnit ? `
+      <div class="side-section-label topic-nav-heading">IN THIS UNIT</div>
+      ${activeUnit.topics.map(function (topic, index) {
+        const selected = activeTopic !== null && Number(activeTopic) === index;
+        return `<a class="topic-nav-link${selected ? " active" : ""}" href="#unit/${activeUnit.id}/theory/topic-${index}"${selected ? ' aria-current="location"' : ""}>
+          <span class="topic-nav-number">${String(index + 1).padStart(2, "0")}</span><span>${esc(topic.title)}</span>
+        </a>`;
+      }).join("")}` : "";
 
     document.querySelectorAll(".nav-link[data-view]").forEach(function (button) {
       button.classList.toggle("active", button.dataset.view === activeView);
@@ -101,8 +113,16 @@
     if (routeName === "unit" && unitById(parts[1])) {
       const unit = unitById(parts[1]);
       const tab = tabs.some(function (item) { return item[0] === parts[2]; }) ? parts[2] : "theory";
-      renderNav(unit.id, "");
+      const topicMatch = /^topic-(\d+)$/.exec(parts[3] || "");
+      const activeTopic = topicMatch ? Number(topicMatch[1]) : null;
+      renderNav(unit.id, "", activeTopic);
       renderUnit(unit, tab);
+      if (tab === "theory" && activeTopic !== null && unit.topics[activeTopic]) {
+        window.requestAnimationFrame(function () {
+          const topic = document.getElementById("topic-" + activeTopic);
+          if (topic) topic.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
       return;
     }
     if (routeName === "schedule") {
@@ -241,7 +261,7 @@
         <p class="why">${esc(error[2])}</p>
       </div>`;
     }).join("");
-    return `<article class="topic-card">
+    return `<article class="topic-card" id="topic-${index}" tabindex="-1">
       <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
       <div class="visual-rule"><span aria-hidden="true">✦</span><span><b>Visual rule</b> · ${esc(topic.rule)}</span></div>
       <div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div>

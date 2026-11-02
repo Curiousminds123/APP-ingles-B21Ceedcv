@@ -21,6 +21,8 @@ The app follows the six units, tasks and calendar shared for the course:
 
 Each unit includes expanded visual explanations in English, tables, examples, common errors, vocabulary flashcards, a 20-question interactive practice set, a reading with six comprehension questions, speaking prompts, an illustrated photo-description activity, and an exam-style task. Completion and learning activity are stored in the browser's local storage.
 
+On wide screens, the course units appear in a persistent left sidebar. Opening a unit reveals a mini-index of its theory points; selecting a point opens the theory section and scrolls directly to it. On smaller screens, the unit and topic navigation moves to a compact horizontal menu.
+
 The year plan uses the supplied September 2026–June 2027 calendar. Dates for Unit 4 Part 3 and Unit 5 Part 2 are reproduced as shown in the source calendar; the app flags their out-of-sequence placement rather than silently changing them.
 
 ## Image credits and licences
