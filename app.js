@@ -266,13 +266,13 @@
       <div class="panel">
         <div class="table-wrap">
           <table class="schedule-table">
-            <thead><tr><th>Week</th><th>Unit / activity</th><th>Focus</th></tr></thead>
+            <thead><tr><th>Week</th><th>Unit / activity</th></tr></thead>
             <tbody>${course.weeks.map(function (item) {
-              const label = item.type ? `<span class="schedule-type">${esc(item.type)}</span>` : "";
+              const label = item.type && item.type !== "Task" ? `<span class="schedule-type">${esc(item.type)}</span>` : "";
               const title = item.unit
                 ? `<a href="#unit/${item.unit}/theory" style="color:var(--teal);text-decoration:none">${esc(item.title)}</a>`
                 : `${esc(item.title)} ${label}`;
-              return `<tr><td>${esc(item.week)}</td><td>${title}</td><td>${esc(item.detail)}</td></tr>`;
+              return `<tr><td>${esc(item.week)}</td><td>${title}</td></tr>`;
             }).join("")}</tbody>
           </table>
         </div>

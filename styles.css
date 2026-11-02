@@ -172,9 +172,8 @@ td strong { color: var(--teal); }
 .mark-complete { width: 100%; margin-top: 10px; }
 .mark-complete.done { background: #4a966c; }
 .schedule-intro { margin: 0 0 18px; }
-.schedule-table td:first-child { width: 95px; white-space: nowrap; color: var(--teal); font-weight: 800; }
-.schedule-table td:nth-child(2) { width: 220px; font-weight: 700; }
-.schedule-table td:last-child { color: var(--muted); }
+.schedule-table td:first-child { width: 135px; white-space: nowrap; color: var(--teal); font-weight: 800; }
+.schedule-table td:nth-child(2) { font-weight: 700; }
 .schedule-type { display: inline-block; margin-left: 6px; padding: 3px 6px; border-radius: 5px; background: #f2f4f3; color: #718084; font-size: 8px; text-transform: uppercase; letter-spacing: .06em; }
 .assessment-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
 .assessment-card { padding: 19px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
