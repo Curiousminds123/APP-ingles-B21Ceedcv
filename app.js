@@ -311,6 +311,14 @@
       <div class="callout-red" style="margin-top:15px"><strong>Important:</strong> APTE / NO APTE is the final grading scale, not a numerical final mark. Exam conditions, permitted exceptions and technical requirements are set by the centre; this app does not replace official guidance.</div>`;
   }
 
+  function unitIllustrationMarkup(unit) {
+    const photo = extendedUnit(unit.id).photo;
+    return `<figure class="topic-illustration">
+      <img src="${esc(photo.src)}" alt="${esc(photo.alt)}" loading="lazy">
+      <figcaption><strong>UNIT ${unit.id} · ${esc(unit.title)}</strong> — ${esc(photo.credit)} <a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer">Source ↗</a> · <a href="${esc(photo.license)}" target="_blank" rel="noopener noreferrer">Licence ↗</a></figcaption>
+    </figure>`;
+  }
+
   function topicMarkup(topic, index, unit) {
     const explanation = extendedUnit(unit.id).explanations[index] || [];
     const rows = topic.rows.map(function (row) {
@@ -329,10 +337,6 @@
     }).join("");
     return `<article class="topic-card" id="topic-${index}" tabindex="-1">
       <div class="topic-title"><span class="topic-icon" aria-hidden="true">${esc(topic.icon)}</span><div><span class="topic-kicker">TOPIC ${String(index + 1).padStart(2, "0")} · GRAMMAR & LANGUAGE</span><h3>${esc(topic.title)}</h3><p>${esc(topic.subtitle)}</p></div></div>
-      <figure class="topic-illustration">
-        <img src="${esc(extendedUnit(unit.id).photo.src)}" alt="${esc(extendedUnit(unit.id).photo.alt)}" loading="lazy">
-        <figcaption><strong>UNIT ${unit.id} · ${esc(unit.title)}</strong> — ${esc(extendedUnit(unit.id).photo.credit)} <a href="${esc(extendedUnit(unit.id).photo.source)}" target="_blank" rel="noopener noreferrer">Source ↗</a> · <a href="${esc(extendedUnit(unit.id).photo.license)}" target="_blank" rel="noopener noreferrer">Licence ↗</a></figcaption>
-      </figure>
       <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
       <div class="grammar-flow" aria-label="Key language patterns">
         ${topic.rows.map(function (row, rowIndex) {
@@ -350,6 +354,7 @@
     return `<section class="panel">
       <div class="theory-hero"><span class="theory-hero-icon" aria-hidden="true">📘</span><div><div class="eyebrow">YOUR VISUAL GRAMMAR MAP</div><h2>Understand it · see it · use it</h2><p>Each topic shows you the key rule, the language pattern, clear examples and the mistakes to avoid.</p></div></div>
       <div class="theory-key"><span>💡 Quick rule</span><span>🧩 Language pattern</span><span>✨ Real examples</span><span>🚦 Common errors</span></div>
+      ${unitIllustrationMarkup(unit)}
       ${unit.topics.map(function (topic, index) { return topicMarkup(topic, index, unit); }).join("")}
     </section>`;
   }
@@ -486,6 +491,7 @@
         <p class="print-credit">Materials created by Ana H. Iranzo with AI assistance</p>
       </header>
       <div class="print-contents"><strong>In this study pack:</strong> ${unit.topics.map(function (topic, index) { return `${index + 1}. ${esc(topic.title)}`; }).join(" · ")} · vocabulary · reading · speaking · exam task · mediation.</div>
+      ${unitIllustrationMarkup(unit)}
       ${topicSheets}
       <section class="print-extra print-vocabulary">
         <h2>🧠 Vocabulary review</h2>
