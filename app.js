@@ -45,7 +45,7 @@
     6: [["🖼️", "🖌️", "🏛️"], ["⬆️", "🔁", "💬"], ["🌡️", "✨", "💯"], ["ℹ️", "✂️", "👥"]]
   };
 
-  let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {} };
+  let state = { completed: [], answers: {}, drills: {}, readingAnswers: {}, flashcards: {}, speakingCards: {}, speakingFlips: {}, practiceHistory: {}, readingHistory: {}, taskTicks: {}, pastActivityResults: {}, pastHistory: [] };
   let oralTimerInterval = null;
   let storageWarning = "";
   try {
@@ -58,6 +58,11 @@
       state.flashcards = saved.flashcards && typeof saved.flashcards === "object" ? saved.flashcards : {};
       state.speakingCards = saved.speakingCards && typeof saved.speakingCards === "object" ? saved.speakingCards : {};
       state.speakingFlips = saved.speakingFlips && typeof saved.speakingFlips === "object" ? saved.speakingFlips : {};
+      state.practiceHistory = saved.practiceHistory && typeof saved.practiceHistory === "object" ? saved.practiceHistory : {};
+      state.readingHistory = saved.readingHistory && typeof saved.readingHistory === "object" ? saved.readingHistory : {};
+      state.taskTicks = saved.taskTicks && typeof saved.taskTicks === "object" ? saved.taskTicks : {};
+      state.pastActivityResults = saved.pastActivityResults && typeof saved.pastActivityResults === "object" ? saved.pastActivityResults : {};
+      state.pastHistory = Array.isArray(saved.pastHistory) ? saved.pastHistory : [];
     }
 
   } catch (error) {
@@ -127,9 +132,13 @@
     return window.CEED_EXTENDED[String(id)];
   }
 
+  const studyData = window.CEED_STUDY;
+  if (!studyData || !Array.isArray(studyData.irregularVerbs) || !studyData.pastExercises || !studyData.functionalLanguage) {
+    throw new Error("The B2.1 past verbs reference and topic language are required.");
+  }
   course.units.forEach(function (unit) {
     const extra = extendedUnit(unit.id);
-    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4 || !extra.mediation.oralTask || !Array.isArray(extra.vocabularyTranslations) || extra.vocabularyTranslations.length !== unit.vocabulary.length + extra.extraVocabulary.length) {
+    if (!extra || extra.quiz.length !== 20 || extra.reading.questions.length !== 6 || !extra.mediation || extra.mediation.steps.length !== 4 || extra.mediation.facts.length !== 4 || !extra.mediation.oralTask || !Array.isArray(extra.vocabularyTranslations) || extra.vocabularyTranslations.length !== unit.vocabulary.length + extra.extraVocabulary.length || !studyData.functionalLanguage[unit.id] || studyData.functionalLanguage[unit.id].length !== unit.topics.length || studyData.functionalLanguage[unit.id].some(function (phrases) { return phrases.length < 3; })) {
       throw new Error("Unit " + unit.id + " must have 20 practice questions, 6 reading questions, 12 translated vocabulary cards and a complete oral mediation infographic.");
     }
     const assignedQuestions = practiceByTopic[unit.id].reduce(function (all, group) { return all.concat(group); }, []);
@@ -137,7 +146,6 @@
       throw new Error("Unit " + unit.id + " practice questions must be assigned to exactly one theory topic.");
     }
   });
-
   function doneCount() {
     return state.completed.length;
   }
@@ -208,12 +216,27 @@
       renderAssessment();
       return;
     }
+    if (routeName === "verbs") {
+      renderNav(null, "verbs");
+      renderPastVerbs();
+      return;
+    }
+    if (routeName === "progress") {
+      renderNav(null, "progress");
+      renderProgress();
+      return;
+    }
     renderNav(null, "home");
     renderHome();
   }
 
   function completionNotice() {
     return storageWarning ? `<div class="notice" role="status"><strong>Progress notice:</strong> ${esc(storageWarning)}</div>` : "";
+  }
+
+  function taskTickMarkup(unitId, taskId, label) {
+    const done = !!(state.taskTicks[unitId] && state.taskTicks[unitId][taskId]);
+    return `<button class="task-tick${done ? " done" : ""}" type="button" data-task-tick="${unitId}:${taskId}" aria-pressed="${done}"><span aria-hidden="true">${done ? "✓" : "○"}</span>${done ? "Completed" : "Mark as completed"} · ${esc(label)}</button>`;
   }
 
   function renderHome() {
@@ -226,6 +249,7 @@
         <div class="hero-actions">
           <a class="button light" href="#unit/${nextUnit.id}/theory">Continue learning <span aria-hidden="true">→</span></a>
           <a class="button" href="#schedule">View the year plan</a>
+          <a class="button outline" href="#progress">📊 My progress</a>
         </div>
       </section>
       ${completionNotice()}
@@ -319,6 +343,169 @@
       <div class="callout-red" style="margin-top:15px"><strong>Important:</strong> APTE / NO APTE is the final grading scale, not a numerical final mark. Exam conditions, permitted exceptions and technical requirements are set by the centre; this app does not replace official guidance.</div>`;
   }
 
+  function normalizedAnswer(value) {
+    return String(value || "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/, "");
+  }
+
+  function renderPastVerbs() {
+    const exercises = studyData.pastExercises;
+    const participles = Array.from(new Set(exercises.matching.map(function (item) { return item[2]; }))).sort();
+    const fillActivity = `<section class="panel past-activity" data-past-activity="completion">
+      <div class="eyebrow">EXERCISE 1 · COMPLETE THE SENTENCE</div><h2>Choose the correct past form</h2>
+      <p class="panel-intro">Read the time clue and decide between past simple, past continuous and past perfect. Use contractions only if the exercise asks for them.</p>
+      ${exercises.completion.map(function (item, index) {
+        return `<div class="past-question" data-past-question><label for="past-fill-${index}"><b>${index + 1}.</b> ${esc(item.prompt)}</label><input id="past-fill-${index}" class="past-response" type="text" data-past-correct="${esc(item.answer)}" autocomplete="off" aria-label="Answer ${index + 1}"><span class="past-feedback" aria-live="polite"></span></div>`;
+      }).join("")}
+      <button class="button" type="button" data-check-past="completion">Check answers</button><p class="past-result" data-past-result role="status"></p>
+    </section>`;
+    const orderingActivity = `<section class="panel past-activity" data-past-activity="ordering">
+      <div class="eyebrow">EXERCISE 2 · PUT THE WORDS IN ORDER</div><h2>Build the sentence</h2>
+      <p class="panel-intro">Use every word once. Add capital letters and punctuation where needed.</p>
+      ${exercises.ordering.map(function (item, index) {
+        return `<div class="past-question" data-past-question><label for="past-order-${index}"><b>${index + 1}.</b> <span class="word-bank">${item.words.map(function (word) { return `<span>${esc(word)}</span>`; }).join("")}</span></label><input id="past-order-${index}" class="past-response" type="text" data-past-correct="${esc(item.answer)}" autocomplete="off" aria-label="Ordered sentence ${index + 1}"><span class="past-feedback" aria-live="polite"></span></div>`;
+      }).join("")}
+      <button class="button" type="button" data-check-past="ordering">Check sentences</button><p class="past-result" data-past-result role="status"></p>
+    </section>`;
+    const matchingActivity = `<section class="panel past-activity" data-past-activity="matching">
+      <div class="eyebrow">EXERCISE 3 · MATCH THE VERB FORMS</div><h2>Match the infinitive to its past participle</h2>
+      <p class="panel-intro">Choose the correct past participle for each infinitive. Use the complete irregular-verb table above for reference.</p>
+      ${exercises.matching.map(function (item, index) {
+        return `<div class="past-match-row" data-past-question><label for="past-match-${index}"><b>${index + 1}.</b> ${esc(item[0])}</label><span aria-hidden="true">→</span><select id="past-match-${index}" class="past-response" data-past-correct="${esc(item[2])}" aria-label="Past participle for ${esc(item[0])}"><option value="">Choose a form…</option>${participles.map(function (form) { return `<option value="${esc(form)}">${esc(form)}</option>`; }).join("")}</select><span class="past-feedback" aria-live="polite"></span></div>`;
+      }).join("")}
+      <button class="button" type="button" data-check-past="matching">Check matches</button><p class="past-result" data-past-result role="status"></p>
+    </section>`;
+    const lastResults = state.pastActivityResults;
+    main.innerHTML = `
+      <div class="eyebrow">EXTRA PRACTICE · IRREGULAR VERBS · PAST TENSES</div>
+      <h1>Past verbs lab</h1>
+      <p class="lead">Use the reference table, compare the past tenses, and practise with three activities. Your checked scores are saved on this device.</p>
+      ${completionNotice()}
+      <section class="panel past-tense-guide">
+        <div class="eyebrow">🧠 QUICK GRAMMAR GUIDE</div><h2>Which past tense should I use?</h2>
+        <div class="past-tense-grid">
+          <article><span>📍 FINISHED EVENT</span><h3>Past simple</h3><p><b>Form:</b> subject + past form</p><p><b>Use:</b> completed event at a finished time.</p><p><i>We visited the gallery last Saturday.</i></p></article>
+          <article><span>🎬 ACTION IN PROGRESS</span><h3>Past continuous</h3><p><b>Form:</b> was / were + verb-ing</p><p><b>Use:</b> background action or an action interrupted by another.</p><p><i>I was reading when the lights went out.</i></p></article>
+          <article><span>⏪ EARLIER PAST</span><h3>Past perfect</h3><p><b>Form:</b> had + past participle</p><p><b>Use:</b> an action completed before another past event.</p><p><i>They had left before we arrived.</i></p></article>
+        </div>
+        <div class="notice"><strong>Remember:</strong> use the past simple after <i>did</i> in questions and negatives: <i>Did you go?</i> / <i>We didn't go.</i></div>
+      </section>
+      <section class="panel">
+        <div class="section-title-row"><div><div class="eyebrow">REFERENCE · ${studyData.irregularVerbs.length} VERBS</div><h2>Irregular verbs table</h2></div><span class="pill">Base form · past simple · past participle</span></div>
+        <p class="panel-intro">A broad reference of common irregular verbs, including frequent British and American variants. The pronunciation of <i>read</i> changes in the past forms.</p>
+        <div class="table-wrap irregular-table-wrap"><table class="irregular-table"><thead><tr><th>Base form</th><th>Past simple</th><th>Past participle</th><th>Spanish</th></tr></thead><tbody>${studyData.irregularVerbs.map(function (verb) {
+          return `<tr><td><strong>${esc(verb[0])}</strong></td><td>${esc(verb[1])}</td><td>${esc(verb[2])}</td><td>${esc(verb[3])}</td></tr>`;
+        }).join("")}</tbody></table></div>
+      </section>
+      <div class="section-heading"><div><h2>✍️ Practise the past tenses</h2><p>Complete, reorder and match. Check each activity to save its score in My progress.</p></div></div>
+      ${fillActivity}${orderingActivity}${matchingActivity}
+      <section class="panel">
+        <div class="eyebrow">YOUR SAVED RESULTS</div><h2>Past verbs activity scores</h2>
+        <div class="past-saved-scores">${["completion", "ordering", "matching"].map(function (type) {
+          const result = lastResults[type];
+          const label = { completion: "Complete the sentence", ordering: "Put the words in order", matching: "Match verb forms" }[type];
+          return `<article><span>${result ? "✓" : "○"}</span><div><strong>${label}</strong><p>${result ? result.score + " / " + result.total + " · " + new Date(result.date).toLocaleString() : "Not checked yet"}</p></div></article>`;
+        }).join("")}</div>
+        <a class="button outline small" href="#progress">Open all progress and score records →</a>
+      </section>`;
+  }
+
+  function renderProgress() {
+    const cardCount = 12;
+    function tick(done, detail) {
+      return `<span class="progress-tick${done ? " is-done" : ""}" title="${esc(detail)}" aria-label="${esc(detail)}">${done ? "✓" : "○"}</span>`;
+    }
+    const unitRows = course.units.map(function (unit) {
+      const id = unit.id;
+      const practiceAttempts = state.practiceHistory[id] || [];
+      const readingAttempts = state.readingHistory[id] || [];
+      const drill = state.drills[id];
+      const answers = state.readingAnswers[id] || {};
+      const cards = state.flashcards[id] || [];
+      const tasks = state.taskTicks[id] || {};
+      const practiceDone = practiceAttempts.length > 0 || !!(drill && drill.index >= 20);
+      const readingDone = readingAttempts.length > 0 || Object.keys(answers).length === 6;
+      const vocabDone = cards.length >= cardCount;
+      const latestPractice = practiceAttempts[practiceAttempts.length - 1];
+      const currentPractice = latestPractice ? latestPractice.score + " / 20" : drill && drill.index >= 20 ? drill.correct + " / 20" : "—";
+      const latestReading = readingAttempts[readingAttempts.length - 1];
+      const currentReading = latestReading ? latestReading.score + " / 6" : Object.keys(answers).length === 6 ? Object.keys(answers).reduce(function (sum, questionIndex) { return sum + (answers[questionIndex] === extendedUnit(id).reading.questions[questionIndex][2] ? 1 : 0); }, 0) + " / 6" : "—";
+      return `<tr>
+        <th scope="row"><a href="#unit/${id}/theory">${String(id).padStart(2, "0")} · ${esc(unit.title)}</a></th>
+        <td>${tick(practiceDone, currentPractice)}<small>${currentPractice}${practiceAttempts.length ? " · " + practiceAttempts.length + " attempt(s)" : ""}</small></td>
+        <td>${tick(readingDone, currentReading)}<small>${currentReading}${readingAttempts.length ? " · " + readingAttempts.length + " attempt(s)" : ""}</small></td>
+        <td>${tick(vocabDone, cards.length + " / " + cardCount)}<small>${cards.length} / ${cardCount} cards</small></td>
+        <td>${tick(tasks.speaking, "Speaking prompts")}</td><td>${tick(tasks.photo, "Photo description")}</td><td>${tick(tasks.skills, "Exam task")}</td><td>${tick(tasks.mediation, "Mediation")}</td><td>${tick(state.completed.includes(id), "Unit marked complete")}</td>
+      </tr>`;
+    }).join("");
+    const scoreRows = [];
+    course.units.forEach(function (unit) {
+      (state.practiceHistory[unit.id] || []).forEach(function (record, index) {
+        scoreRows.push({ unit: unit.title, activity: "20-question practice · attempt " + (index + 1), score: record.score + " / " + record.total, date: record.date });
+      });
+      (state.readingHistory[unit.id] || []).forEach(function (record, index) {
+        scoreRows.push({ unit: unit.title, activity: "Reading · attempt " + (index + 1), score: record.score + " / " + record.total, date: record.date });
+      });
+      const drill = state.drills[unit.id];
+      if (!(state.practiceHistory[unit.id] || []).length && drill && drill.index >= 20) {
+        scoreRows.push({ unit: unit.title, activity: "20-question practice · existing result", score: drill.correct + " / 20", date: "" });
+      }
+      const answers = state.readingAnswers[unit.id] || {};
+      if (!(state.readingHistory[unit.id] || []).length && Object.keys(answers).length === 6) {
+        const score = Object.keys(answers).reduce(function (sum, questionIndex) { return sum + (answers[questionIndex] === extendedUnit(unit.id).reading.questions[questionIndex][2] ? 1 : 0); }, 0);
+        scoreRows.push({ unit: unit.title, activity: "Reading · existing result", score: score + " / 6", date: "" });
+      }
+    });
+    const pastAttemptCounts = {};
+    state.pastHistory.forEach(function (record) {
+      pastAttemptCounts[record.activity] = (pastAttemptCounts[record.activity] || 0) + 1;
+      const title = { completion: "Past tenses · Complete", ordering: "Past tenses · Reorder", matching: "Past tenses · Match" }[record.activity] || "Past tenses practice";
+      scoreRows.push({ unit: "Past verbs lab", activity: title + " · attempt " + pastAttemptCounts[record.activity], score: record.score + " / " + record.total, date: record.date });
+    });
+    scoreRows.sort(function (left, right) { return String(right.date).localeCompare(String(left.date)); });
+    const completedChecks = course.units.reduce(function (total, unit) {
+      const tasks = state.taskTicks[unit.id] || {};
+      const answers = state.readingAnswers[unit.id] || {};
+      const drill = state.drills[unit.id];
+      return total + ((state.practiceHistory[unit.id] || []).length > 0 || !!(drill && drill.index >= 20) ? 1 : 0) +
+        ((state.readingHistory[unit.id] || []).length > 0 || Object.keys(answers).length === 6 ? 1 : 0) +
+        ((state.flashcards[unit.id] || []).length >= cardCount ? 1 : 0) +
+        ["speaking", "photo", "skills", "mediation"].filter(function (key) { return !!tasks[key]; }).length +
+        (state.completed.includes(unit.id) ? 1 : 0);
+    }, 0) + Object.keys(state.pastActivityResults).length;
+    const totalChecks = course.units.length * 8 + 3;
+    main.innerHTML = `
+      <div class="eyebrow">SAVED ON THIS DEVICE · COURSE CHECKLIST</div>
+      <h1>My progress</h1>
+      <p class="lead">Ticks show completed activities. Scores and attempt dates are recorded when you check an exercise; speaking, writing and photo-description tasks can be ticked when you finish them.</p>
+      ${completionNotice()}
+      <section class="stats-grid progress-summary">
+        <div class="stat-card"><strong>${state.completed.length} / 6</strong><span>units completed</span></div>
+        <div class="stat-card"><strong>${completedChecks} / ${totalChecks}</strong><span>progress checks</span></div>
+        <div class="stat-card"><strong>${scoreRows.length}</strong><span>saved scores</span></div>
+        <div class="stat-card"><strong>${Object.keys(state.pastActivityResults).length} / 3</strong><span>past activities checked</span></div>
+      </section>
+      <section class="panel progress-table-panel">
+        <div class="eyebrow">UNIT-BY-UNIT CHECKLIST</div><h2>Exercises and task completion</h2>
+        <div class="table-wrap"><table class="progress-table"><thead><tr><th>Unit</th><th>20 questions<br><small>score</small></th><th>Reading<br><small>score</small></th><th>Vocabulary</th><th>Speaking</th><th>Photo</th><th>Exam task</th><th>Mediation</th><th>Unit</th></tr></thead><tbody>${unitRows}</tbody></table></div>
+        <p class="progress-legend"><span>✓ Completed</span><span>○ Not completed</span> · Current scores show the latest completed attempt.</p>
+      </section>
+      <section class="panel">
+        <div class="eyebrow">ATTEMPT HISTORY</div><h2>All saved scores</h2>
+        ${scoreRows.length ? `<div class="table-wrap"><table class="score-history-table"><thead><tr><th>Unit / section</th><th>Exercise</th><th>Score</th><th>Date</th></tr></thead><tbody>${scoreRows.map(function (record) {
+          return `<tr><td>${esc(record.unit)}</td><td>${esc(record.activity)}</td><td><strong>${esc(record.score)}</strong></td><td>${record.date ? esc(new Date(record.date).toLocaleString()) : "Existing saved result"}</td></tr>`;
+        }).join("")}</tbody></table></div>` : `<div class="empty-state">No scores yet. Complete and check an exercise to start your record.</div>`}
+      </section>
+      <section class="panel">
+        <div class="eyebrow">EXTRA PRACTICE</div><h2>Past verbs lab</h2>
+        <div class="past-saved-scores">${["completion", "ordering", "matching"].map(function (type) {
+          const result = state.pastActivityResults[type];
+          const label = { completion: "Complete past-tense sentences", ordering: "Put words in order", matching: "Match irregular verb forms" }[type];
+          return `<article><span>${result ? "✓" : "○"}</span><div><strong>${label}</strong><p>${result ? result.score + " / " + result.total + " · " + new Date(result.date).toLocaleString() : "Not completed"}</p></div></article>`;
+        }).join("")}</div>
+        <a class="button outline small" href="#verbs">Go to the past verbs lab →</a>
+      </section>`;
+  }
+
   function unitIllustrationMarkup(unit) {
     const photo = extendedUnit(unit.id).photo;
     return `<figure class="topic-illustration">
@@ -329,6 +516,7 @@
 
   function topicMarkup(topic, index, unit) {
     const explanation = extendedUnit(unit.id).explanations[index] || [];
+    const functionalPhrases = studyData.functionalLanguage[unit.id][index];
     const rows = topic.rows.map(function (row) {
       return `<tr>${row.map(function (cell) { return `<td>${cell}</td>`; }).join("")}</tr>`;
     }).join("");
@@ -350,15 +538,22 @@
         <div class="topic-visual-caption"><span>🎨 VISUAL MEMORY CUE</span><strong>${esc(topic.title)}</strong></div>
         <span class="topic-visual-spark" aria-hidden="true">✦</span>
       </div>
-      <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
-      <div class="grammar-flow" aria-label="Key language patterns">
-        ${topic.rows.map(function (row, rowIndex) {
-          return `<div class="grammar-flow-card"><span class="grammar-flow-step">${["🧩", "🔧", "💬", "⭐"][rowIndex % 4]}</span><div><strong>${row[0]}</strong><span>${row[1]}</span><p>${row[2]}</p></div></div>`;
-        }).join("")}
-      </div>
-      <details class="theory-table-details"><summary>📊 Open the full comparison table</summary><div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details>
-      ${explanation.length ? `<div class="theory-explanation"><h4>🧠 Understand the idea</h4>${explanation.map(function (paragraph, paragraphIndex) { return `<div class="explanation-point"><span aria-hidden="true">${paragraphIndex ? "🔎" : "📘"}</span><p>${esc(paragraph)}</p></div>`; }).join("")}</div>` : ""}
+      <section class="grammar-box" aria-label="Grammar explanation">
+        <div class="grammar-box-heading"><span aria-hidden="true">🧩</span><div><span class="eyebrow">GRAMMAR BOX · CLEAR RULES</span><h4>Form · meaning · example</h4></div></div>
+        <div class="visual-rule"><span class="visual-rule-icon" aria-hidden="true">💡</span><span><b>THE QUICK RULE</b><br>${esc(topic.rule)}</span></div>
+        <div class="grammar-flow" aria-label="Key language patterns">
+          ${topic.rows.map(function (row, rowIndex) {
+            return `<div class="grammar-flow-card"><span class="grammar-flow-step">${["🧩", "🔧", "💬", "⭐"][rowIndex % 4]}</span><div><strong>${row[0]}</strong><span>${row[1]}</span><p>${row[2]}</p></div></div>`;
+          }).join("")}
+        </div>
+        <details class="theory-table-details"><summary>📊 Open the full comparison table</summary><div class="table-wrap"><table><thead><tr>${topic.cols.map(function (cell) { return `<th>${esc(cell)}</th>`; }).join("")}</tr></thead><tbody>${rows}</tbody></table></div></details>
+        ${explanation.length ? `<div class="theory-explanation"><h4>🧠 Understand the idea</h4>${explanation.map(function (paragraph, paragraphIndex) { return `<div class="explanation-point"><span aria-hidden="true">${paragraphIndex ? "🔎" : "📘"}</span><p>${esc(paragraph)}</p></div>`; }).join("")}</div>` : ""}
+      </section>
       <div class="eyebrow theory-label">✨ EXAMPLES IN CONTEXT</div><div class="example-row">${examples}</div>
+      <section class="functional-language">
+        <div class="functional-language-heading"><span aria-hidden="true">💬</span><div><span class="eyebrow">FUNCTIONAL LANGUAGE</span><h4>Useful expressions for this topic</h4></div></div>
+        <div class="functional-language-grid">${functionalPhrases.map(function (phrase) { return `<article class="functional-phrase"><strong>${esc(phrase[0])}</strong><span>${esc(phrase[1])}</span></article>`; }).join("")}</div>
+      </section>
       <div class="errors"><div class="eyebrow">🚦 WATCH OUT · COMMON ERRORS</div>${errors}</div>
     </article>`;
   }
@@ -416,6 +611,7 @@
       <ul class="strategy-list">${output.tips.map(function (tip, index) {
         return `<li><b>${String(index + 1).padStart(2, "0")}</b><span>${esc(tip)}</span></li>`;
       }).join("")}</ul>
+      ${taskTickMarkup(unit.id, "skills", "Exam task")}
     </section>`;
   }
 
@@ -456,6 +652,7 @@
       </section>
       <details class="mediation-model"><summary>Open a model answer</summary><p>${esc(data.model)}</p></details>
       <div class="mediation-check"><strong>Before you share:</strong> ${data.checks.map(function (check) { return `<span>✓ ${esc(check)}</span>`; }).join("")}</div>
+      ${taskTickMarkup(unit.id, "mediation", "Mediation task")}
     </section>`;
   }
 
@@ -687,6 +884,7 @@
         </span>
       </button>
       <div class="speaking-self-check"><strong>Before you finish:</strong> Did you answer every part? Did you give a reason or example? Did you use this unit's target grammar?</div>
+      ${taskTickMarkup(unit.id, "speaking", "Speaking prompts")}
     </section>
     <section class="panel photo-panel">
       <div class="eyebrow">VISUAL SPEAKING · DESCRIBE THE PHOTO</div>
@@ -706,6 +904,7 @@
         <summary>Open image vocabulary (${photo.words.length} words)</summary>
         <div class="photo-words">${photo.words.map(function (item) { return `<div><strong>${esc(item[0])}</strong><span>${esc(item[1])}</span></div>`; }).join("")}</div>
       </details>
+      ${taskTickMarkup(unit.id, "photo", "Photo description")}
     </section>`;
   }
 
@@ -778,8 +977,42 @@
     if (questionElement) questionElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
+  function checkPastActivity(type) {
+    const activity = main.querySelector(`[data-past-activity="${type}"]`);
+    if (!activity) return;
+    const questions = Array.from(activity.querySelectorAll("[data-past-question]"));
+    let score = 0;
+    let total = 0;
+    questions.forEach(function (question) {
+      const inputs = Array.from(question.querySelectorAll("[data-past-correct]"));
+      let questionCorrect = true;
+      inputs.forEach(function (input) {
+        total += 1;
+        const accepted = input.dataset.pastCorrect.split("|").map(normalizedAnswer);
+        const correct = accepted.includes(normalizedAnswer(input.value));
+        if (correct) score += 1;
+        else questionCorrect = false;
+        input.classList.toggle("past-correct", correct);
+        input.classList.toggle("past-incorrect", !correct);
+        input.setAttribute("aria-invalid", String(!correct));
+      });
+      const feedback = question.querySelector(".past-feedback");
+      if (feedback) {
+        const answers = inputs.map(function (input) { return input.dataset.pastCorrect; });
+        feedback.textContent = questionCorrect ? "✓ Correct" : "Answer: " + answers.join(" · ");
+        feedback.className = "past-feedback " + (questionCorrect ? "good" : "bad");
+      }
+    });
+    const date = new Date().toISOString();
+    state.pastActivityResults[type] = { score: score, total: total, date: date };
+    state.pastHistory.push({ activity: type, score: score, total: total, date: date });
+    const result = activity.querySelector("[data-past-result]");
+    if (result) result.textContent = "Saved score: " + score + " / " + total + ". You can change your answers and check again.";
+    save();
+  }
+
   document.addEventListener("click", function (event) {
-    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], #menu-button");
+    const target = event.target.closest("[data-view], [data-unit], [data-answer], [data-complete], [data-retry], [data-next-question], [data-restart-drill], [data-reading-answer], [data-reading-retry], [data-reset-reading], [data-flashcard], [data-conversation-move], [data-conversation-flip], [data-print-booklet], [data-start-oral], [data-reset-oral], [data-check-past], [data-task-tick], #menu-button");
     if (!target) return;
 
     if (target.id === "menu-button") {
@@ -796,6 +1029,24 @@
     }
     if (target.hasAttribute("data-reset-oral")) {
       resetOralTimer();
+      return;
+    }
+    if (target.hasAttribute("data-check-past")) {
+      checkPastActivity(target.dataset.checkPast);
+      return;
+    }
+    if (target.hasAttribute("data-task-tick")) {
+      const parts = target.dataset.taskTick.split(":");
+      const unitId = Number(parts[0]);
+      const taskId = parts[1];
+      if (!unitById(unitId) || !taskId) return;
+      if (!state.taskTicks[unitId]) state.taskTicks[unitId] = {};
+      state.taskTicks[unitId][taskId] = !state.taskTicks[unitId][taskId];
+      const done = state.taskTicks[unitId][taskId];
+      target.classList.toggle("done", done);
+      target.setAttribute("aria-pressed", String(done));
+      target.innerHTML = `<span aria-hidden="true">${done ? "✓" : "○"}</span>${done ? "Completed" : "Mark as completed"} · ${esc({ skills: "Exam task", speaking: "Speaking prompts", photo: "Photo description", mediation: "Mediation task" }[taskId] || taskId)}`;
+      save();
       return;
     }
     if (target.dataset.view) {
@@ -815,7 +1066,12 @@
       const id = Number(target.dataset.nextQuestion);
       const drill = state.drills[id];
       if (!drill || !Number.isInteger(drill.selected)) return;
-      state.drills[id] = { index: drill.index + 1, correct: drill.correct, streak: drill.streak, selected: null };
+      const nextIndex = drill.index + 1;
+      if (nextIndex >= extendedUnit(id).quiz.length) {
+        if (!state.practiceHistory[id]) state.practiceHistory[id] = [];
+        state.practiceHistory[id].push({ score: drill.correct, total: extendedUnit(id).quiz.length, date: new Date().toISOString() });
+      }
+      state.drills[id] = { index: nextIndex, correct: drill.correct, streak: drill.streak, selected: null };
       save();
       renderUnit(unitById(id), "practice");
       return;
@@ -835,6 +1091,14 @@
       if (!state.readingAnswers[id]) state.readingAnswers[id] = {};
       if (Object.prototype.hasOwnProperty.call(state.readingAnswers[id], questionIndex)) return;
       state.readingAnswers[id][questionIndex] = Number(target.dataset.readingAnswer);
+      if (Object.keys(state.readingAnswers[id]).length === extendedUnit(id).reading.questions.length) {
+        const questions = extendedUnit(id).reading.questions;
+        const score = questions.reduce(function (total, question, index) {
+          return total + (state.readingAnswers[id][index] === question[2] ? 1 : 0);
+        }, 0);
+        if (!state.readingHistory[id]) state.readingHistory[id] = [];
+        state.readingHistory[id].push({ score: score, total: questions.length, date: new Date().toISOString() });
+      }
       save();
       renderUnit(unitById(id), "reading");
       return;
